@@ -1,0 +1,12 @@
+.extension__main__head__selection {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 10px;
+	.extension__main__head__selection__label {
+		font-weight: 600;
+		margin: 0;
+		font-size: var(--fontL);
+		color: var(--primary-color);
+	}
+}

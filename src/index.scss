@@ -1,0 +1,45 @@
+:root {
+	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+
+	--static-item-selected: rgba(25, 150, 235, 20%);
+	--box-shadow-color: rgba(77, 77, 77, 0.25);
+	--fontS: 12px;
+	--fontM: 14px;
+	--primary-img-info-bg: rgb(225, 225, 225);
+	--primary-color: rgb(77, 77, 77);
+	--secondary-color: rgb(150, 150, 150);
+	--white-color: rgb(255, 255, 255);
+	--hover-bg-color: rgb(245, 245, 245);
+	--gray-color: rgb(220, 220, 220);
+	--grey-color: rgb(200, 200, 200);
+}
+
+body {
+	margin: 0;
+	display: flex;
+	place-items: center;
+	min-width: 320px;
+	height: 100vh;
+}
+
+button {
+	cursor: pointer;
+	outline: none;
+}
+.app {
+	display: flex;
+	flex-direction: row;
+}
+.test__iframe {
+	margin: 0;
+	padding: 0;
+	height: 100vw;
+	max-height: 100vh;
+	width: 100vh;
+	overflow: hidden;
+}

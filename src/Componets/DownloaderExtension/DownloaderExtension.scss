@@ -1,0 +1,13 @@
+.extension__main__wrapper {
+	min-width: 520px;
+	.static__data__header__filters {
+		display: flex;
+		flex-direction: row;
+		gap: 10px;
+	}
+	.static__data__canvas__wrapper {
+		position: absolute;
+		top: -9999px;
+		left: -9999px;
+	}
+}

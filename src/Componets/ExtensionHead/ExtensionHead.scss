@@ -1,0 +1,19 @@
+.extension__main__head__wrapper {
+	padding: 0 10px 10px;
+	margin-top: 20px;
+	.extension__main__head {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		background: var(--white-color);
+		box-shadow: 0 0 16px var(--box-shadow-color);
+		border-radius: 8px;
+		padding: 10px;
+		.extension__main__head__filters {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			gap: 10px;
+		}
+	}
+}
