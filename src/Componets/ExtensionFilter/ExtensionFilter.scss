@@ -9,6 +9,7 @@
 		align-items: center;
 		gap: 5px;
 		padding: 0 15px;
+		margin: 0;
 		&:not(.static__data__header__filter__item__active) {
 			&:hover {
 				background-color: var(--hover-bg-color);

@@ -3,6 +3,7 @@ import './SizeFilter.scss';
 import Dropdown from '../Dropdown/Dropdown';
 import { GetAllStaticResponse } from '../../utils/getAllStaticURLS';
 import { StaticDataSizeFilter } from '../../interface';
+import { ThinLineElement } from '../shared/ThinLineElement';
 
 function SizeFilter({
 	selectedSize,
@@ -59,7 +60,10 @@ function SizeFilter({
 		<div className="static__data__header__filter">
 			<Dropdown header="Size" disabled={sizeData === undefined}>
 				{sizeData ? (
-					<form className="static__data__header__filter__content static__data__header__filter__allowed__size" ref={formRef}>
+					<form
+						className="static__data__header__filter__content static__data__header__filter__allowed__size"
+						ref={formRef}
+					>
 						<div className="size__filter__wrapper size__filter__width">
 							<div className="size__filter__header__wrapper">
 								<p className="size__filter__header">Width</p>
@@ -88,7 +92,7 @@ function SizeFilter({
 								/>
 							</div>
 						</div>
-						<hr className="size__filter__hr" />
+						<ThinLineElement />
 						<div className="size__filter__wrapper size__filter__height">
 							<p className="size__filter__header">Height</p>
 							<div className="size__filter__wrapper__content">

@@ -20,7 +20,9 @@ function SelectAllButton({
 	};
 	return (
 		<button className="static__data__select__all__button" onClick={OnClick}>
-			{selectedItems.length > 0 ? 'Unselect all' : 'Select all'}
+			<p className="static__data__select__all__button__label">
+				{selectedItems.length > 0 ? 'Unselect all' : 'Select all'}
+			</p>
 		</button>
 	);
 }

@@ -1,19 +1,22 @@
 .static__data__select__all__button {
 	border-radius: 8px;
-	color: var(--white-color);
-	font-size: var(--fontX);
 	font-weight: 600;
 	background: rgb(88, 117, 179);
 	background: linear-gradient(90deg, rgb(88, 117, 179) 0%, rgb(61, 93, 181) 35%, rgb(0, 212, 255) 100%);
 	border: none;
 	outline: none;
-	padding: 5px 8px;
 	cursor: pointer;
-	letter-spacing: 0.5px;
-	font-family: sans-serif;
 	opacity: 1;
 	transition: opacity 0.15s ease-out;
 	&:hover {
 		opacity: 0.9;
+	}
+	.static__data__select__all__button__label {
+		letter-spacing: 0.5px;
+		font-family: sans-serif;
+		padding: 5px 8px;
+		color: var(--white-color);
+		font-size: var(--fontL);
+		margin: 0;
 	}
 }

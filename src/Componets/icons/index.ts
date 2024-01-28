@@ -6,5 +6,18 @@ import DownArrowIcon from '../../../public/icons/DownArrow.svg?react';
 import LinkIcon from '../../../public/icons/link.svg?react';
 import DownloadIcon from '../../../public/icons/download.svg?react';
 import ExtensionLogo from '../../../public/icons/ExtensionLogo.svg?react';
+import SettingsIcon from '../../../public/icons/settings.svg?react';
+import ImageIcon from '../../../public/icons/image.svg?react';
+import DocumentIcon from '../../../public/icons/document.svg?react';
 
-export { CheckmarkIcon, ConvertIcon, DownArrowIcon, LinkIcon, DownloadIcon, ExtensionLogo };
+export {
+	CheckmarkIcon,
+	ConvertIcon,
+	DownArrowIcon,
+	LinkIcon,
+	DownloadIcon,
+	ExtensionLogo,
+	SettingsIcon,
+	ImageIcon,
+	DocumentIcon,
+};

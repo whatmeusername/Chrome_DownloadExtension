@@ -1,8 +1,9 @@
 import { ReactElement } from 'react';
 import { StaticData } from '../../interface';
-import { downloadImage } from '../../utils/downloadFiles';
+import { ChromeDownloadFile } from '../../utils/ChromeDownloadFile';
 import './StaticDataElement.scss';
 import { LinkIcon } from '../icons';
+import { ThinLineElement } from '../shared/ThinLineElement';
 
 function OpenAtNewTab({ StaticData }: { StaticData: StaticData }): ReactElement {
 	if (StaticData.type === 'data') {
@@ -12,13 +13,20 @@ function OpenAtNewTab({ StaticData }: { StaticData: StaticData }): ReactElement 
 		};
 
 		return (
-			<button onClick={onClick} className="static__data__item__img__info__item static__data__item__img__info__item__link">
+			<button
+				onClick={onClick}
+				className="static__data__item__img__info__item static__data__item__img__info__item__link"
+			>
 				<LinkIcon className="static__data__item__img__info__item__link__icon" />
 			</button>
 		);
 	} else {
 		return (
-			<a href={StaticData.src} className="static__data__item__img__info__item static__data__item__img__info__item__link" target="_blank">
+			<a
+				href={StaticData.src}
+				className="static__data__item__img__info__item static__data__item__img__info__item__link"
+				target="_blank"
+			>
 				<LinkIcon className="static__data__item__img__info__item__link__icon" />
 			</a>
 		);
@@ -63,7 +71,9 @@ function StaticDataItemElement({
 			<div className="static__data__item__content">
 				<div className="static__data__item__img__wrapper" onClick={SetItemActive}>
 					<div className="static__data__item__img__info">
-						<div className="static__data__item__img__info__item static__data__item__img__info__item__extension">{StaticData.extension}</div>
+						<div className="static__data__item__img__info__item static__data__item__img__info__item__extension">
+							{StaticData.extension}
+						</div>
 						<div className="static__data__item__img__info__item static__data__item__img__info__item__size">
 							{size} {sizeUnit}
 						</div>
@@ -77,10 +87,13 @@ function StaticDataItemElement({
 					<img className="static__data__item__img" src={StaticData.src} alt={StaticData.alt ?? undefined} />
 				</div>
 				<div className="static__data__item__info">
-					<hr className="static__data__item__info__hr" />
+					<ThinLineElement />
 					<p className="static__data__item__label">{StaticData.alt ?? StaticData.name}</p>
 					<div className="static__data__item__buttons">
-						<button className="static__data__item__button static__data__item__button__download" onClick={() => downloadImage(StaticData)}>
+						<button
+							className="static__data__item__button static__data__item__button__download"
+							onClick={() => ChromeDownloadFile(StaticData)}
+						>
 							Download file
 						</button>
 					</div>
