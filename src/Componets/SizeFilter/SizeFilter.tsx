@@ -14,39 +14,29 @@ function SizeFilter({
 	setSelectedSize: React.Dispatch<React.SetStateAction<StaticDataSizeFilter>>;
 	sizeData: GetAllStaticResponse['size'];
 }): ReactElement | null {
-	const timeout = useRef<ReturnType<typeof setTimeout>>(null!);
 	const formRef = useRef<HTMLFormElement>(null!);
 
 	const ResetFilter = (e: React.FormEvent) => {
 		e.preventDefault();
-		clearTimeout(timeout.current);
 		setSelectedSize({ height: { min: null, max: null }, width: { min: null, max: null } });
 		formRef.current.reset();
 	};
 
-	const onKeyUp = (e: React.KeyboardEvent<HTMLInputElement>, key: 'width' | 'height', size: 'min' | 'max') => {
-		const eKey = e.code;
-		const target: HTMLInputElement = e.target as HTMLInputElement;
-		if (['-', '+', '.', ',', '+', 'e'].includes(eKey)) {
-			e.preventDefault();
-			return;
-		}
+	const OnFormSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+		const formData = new FormData(formRef.current);
+		let minWidth = formData.get('width_min') ? Number(formData.get('width_min')) : null;
+		let maxWidth = formData.get('width_max') ? Number(formData.get('width_max')) : null;
+		let minHeight = formData.get('height_min') ? Number(formData.get('height_min')) : null;
+		let maxHeight = formData.get('height_max') ? Number(formData.get('height_max')) : null;
 
-		const dataValue = sizeData[key][size];
-		let inputValue = Number(target.value);
-		if (size === 'max' && inputValue > dataValue) {
-			inputValue = dataValue;
-			target.value = dataValue.toString();
-		}
+		minWidth = minWidth !== null && minWidth < sizeData.width.min ? sizeData.width.min : minWidth;
+		maxWidth = maxWidth !== null && maxWidth > sizeData.width.max ? sizeData.width.max : maxWidth;
 
-		clearTimeout(timeout.current);
-		timeout.current = setTimeout(() => {
-			// TODO: FIX STATE
-			setSelectedSize((prev) => {
-				prev[key][size] = inputValue;
-				return JSON.parse(JSON.stringify(prev));
-			});
-		}, 350);
+		minHeight = minHeight !== null && minHeight < sizeData.height.min ? sizeData.height.min : minHeight;
+		maxHeight = maxHeight !== null && maxHeight < sizeData.height.max ? sizeData.height.max : maxHeight;
+
+		setSelectedSize({ width: { min: minWidth, max: maxWidth }, height: { min: minHeight, max: maxHeight } });
 	};
 
 	const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -60,35 +50,29 @@ function SizeFilter({
 		<div className="static__data__header__filter">
 			<Dropdown header="Size" disabled={sizeData === undefined}>
 				{sizeData ? (
-					<form
-						className="static__data__header__filter__content static__data__header__filter__allowed__size"
-						ref={formRef}
-					>
+					<form className="static__data__header__filter__content static__data__header__filter__allowed__size" ref={formRef}>
 						<div className="size__filter__wrapper size__filter__width">
 							<div className="size__filter__header__wrapper">
 								<p className="size__filter__header">Width</p>
-								<button onClick={ResetFilter} className="size__filter__reset__button">
-									Reset size filter
-								</button>
 							</div>
 							<div className="size__filter__wrapper__content">
 								<p className="size__filter__label">from</p>
 								<input
 									className="size__filter__input"
 									type="number"
+									name="width_min"
 									defaultValue={selectedSize.width.min ?? ''}
 									placeholder={sizeData.width.min.toString()}
 									onKeyDown={onKeyDown}
-									onKeyUp={(e) => onKeyUp(e, 'width', 'min')}
 								/>
 								<p className="size__filter__label">to</p>
 								<input
 									className="size__filter__input"
 									type="number"
+									name="width_max"
 									defaultValue={selectedSize.width.max ?? ''}
 									placeholder={sizeData.width.max.toString()}
 									onKeyDown={onKeyDown}
-									onKeyUp={(e) => onKeyUp(e, 'width', 'max')}
 								/>
 							</div>
 						</div>
@@ -101,20 +85,28 @@ function SizeFilter({
 									className="size__filter__input"
 									defaultValue={selectedSize.height.min ?? ''}
 									type="text"
+									name="height_min"
 									placeholder={sizeData.height.min.toString()}
 									onKeyDown={onKeyDown}
-									onKeyUp={(e) => onKeyUp(e, 'height', 'min')}
 								/>
 								<p className="size__filter__label">to</p>
 								<input
 									className="size__filter__input"
 									type="text"
+									name="height_max"
 									defaultValue={selectedSize.height.max ?? ''}
 									placeholder={sizeData.height.max.toString()}
 									onKeyDown={onKeyDown}
-									onKeyUp={(e) => onKeyUp(e, 'height', 'max')}
 								/>
 							</div>
+						</div>
+						<div className="size__filter__buttons__wrapper">
+							<button onClick={OnFormSubmit} className="size__filter__button">
+								<p className="size__filter__button__label">Apply filter</p>
+							</button>
+							<button onClick={ResetFilter} className="size__filter__button">
+								<p className="size__filter__button__label">Reset filter</p>
+							</button>
 						</div>
 					</form>
 				) : null}

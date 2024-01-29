@@ -42,6 +42,7 @@ async function getAllStaticURLS(staticLinks: StaticLinksResult): Promise<GetAllS
 
 					if (ALOWED_IMAGE_EXTENSION.includes(result.extension ?? '')) {
 						return {
+							blob: result.blob,
 							type: image.type,
 							src: image.src,
 							name: extensionNameSplit[0],
@@ -64,6 +65,7 @@ async function getAllStaticURLS(staticLinks: StaticLinksResult): Promise<GetAllS
 		const extension = image.src?.match(/[data:image\][\w]+(?=[;+])/)?.[0];
 		const size = image.src.substring(image.src.indexOf(',') + 1).length * 6;
 		dataResults.push({
+			blob: null,
 			type: image.type,
 			src: image.src,
 			name: '',

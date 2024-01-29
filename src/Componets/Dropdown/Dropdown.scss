@@ -6,13 +6,13 @@
 		justify-content: space-between;
 		align-items: center;
 		background-color: transparent;
-		border: none;
-		padding: 10px 15px;
+		border: 2px solid var(--gray-color);
+		padding: 5px 20px;
 		width: 100%;
 		cursor: pointer;
 		background-color: var(--white-color);
-		box-shadow: 0 0 16px var(--box-shadow-color);
 		border-radius: 8px;
+		transition: box-shadow 0.3s ease;
 
 		.modal__label {
 			font-family: sans-serif;
@@ -45,6 +45,7 @@
 		}
 
 		&:hover {
+			box-shadow: 0 0 16px var(--box-shadow-color);
 			.modal__label {
 				color: var(--standard-color);
 			}
@@ -66,6 +67,7 @@
 		border-radius: 8px;
 		display: none;
 		padding: 0;
+		margin-top: 5px;
 
 		&.modal__content__active {
 			display: block;

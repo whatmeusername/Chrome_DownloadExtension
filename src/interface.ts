@@ -32,6 +32,7 @@ type StaticLinksData = {
 };
 
 interface StaticData {
+	blob: Blob | null;
 	type: 'data' | 'src';
 	src: string;
 	name: string;

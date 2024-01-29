@@ -12,11 +12,7 @@ function HeadSelectionElement({ StaticDataResult }: { StaticDataResult: StaticDa
 	return (
 		<div className="extension__main__head__selection">
 			<div className="extension__main__head__selection__left">
-				<SelectAllButton
-					StaticDataArray={StaticDataResult}
-					selectedItems={selectedItems}
-					setSelectedItems={setSelectedItems}
-				/>
+				<SelectAllButton StaticDataArray={StaticDataResult} selectedItems={selectedItems} setSelectedItems={setSelectedItems} />
 				<p className="extension__main__head__selection__label">
 					Selected {selectedItems.length} of {StaticDataResult?.length ?? 0} files
 				</p>
@@ -24,7 +20,9 @@ function HeadSelectionElement({ StaticDataResult }: { StaticDataResult: StaticDa
 			<div className="extension__main__head__selection__right">
 				<button
 					className={`extension__main__head__selection__download__all ${
-						selectedItems.length === 0 ? 'extension__main__head__selection__download__all__disabled' : ''
+						selectedItems.length === 0
+							? 'extension__main__head__selection__download__all__disabled'
+							: 'extension__main__head__selection__download__all__acitve'
 					}`}
 					disabled={selectedItems.length === 0}
 					onClick={selectedItems.length === 0 ? undefined : () => ChromeDownloadFile(selectedItems)}

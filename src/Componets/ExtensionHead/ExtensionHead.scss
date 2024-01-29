@@ -2,51 +2,51 @@
 	background: var(--white-color);
 	border-radius: 0 0 8px 8px;
 	box-shadow: 0 0 16px var(--box-shadow-color);
-	.extension__main__head__menu {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		align-items: center;
-		padding: 10px;
-		.extension__main__head__categories {
-			display: flex;
-			flex-direction: row;
-			align-items: center;
-			gap: 10px;
-			.extension__main__head__category__item {
-				display: flex;
-				flex-direction: row;
-				align-items: center;
-				gap: 10px;
-				background: none;
-				outline: none;
-				border: none;
-				.extension__main__head__category__item__label {
-					color: var(--primary-color);
-					font-family: sans-serif;
-					font-size: var(--fontX);
-					font-weight: 600;
-				}
-				.extension__main__head__category__item__icon {
-					fill: var(--primary-color);
-					width: 25px;
-					height: 25px;
-				}
-			}
-		}
-		.extension__main__head__settings {
-			.extension__main__head__settings__button {
-				background: none;
-				outline: none;
-				border: none;
-				.extension__main__head__settings__icon {
-					fill: var(--primary-color);
-					width: 30px;
-					height: 30px;
-				}
-			}
-		}
-	}
+	// .extension__main__head__menu {
+	// 	display: flex;
+	// 	flex-direction: row;
+	// 	justify-content: space-between;
+	// 	align-items: center;
+	// 	padding: 10px;
+	// 	.extension__main__head__categories {
+	// 		display: flex;
+	// 		flex-direction: row;
+	// 		align-items: center;
+	// 		gap: 10px;
+	// 		.extension__main__head__category__item {
+	// 			display: flex;
+	// 			flex-direction: row;
+	// 			align-items: center;
+	// 			gap: 10px;
+	// 			background: none;
+	// 			outline: none;
+	// 			border: none;
+	// 			.extension__main__head__category__item__label {
+	// 				color: var(--primary-color);
+	// 				font-family: sans-serif;
+	// 				font-size: var(--fontX);
+	// 				font-weight: 600;
+	// 			}
+	// 			.extension__main__head__category__item__icon {
+	// 				fill: var(--primary-color);
+	// 				width: 25px;
+	// 				height: 25px;
+	// 			}
+	// 		}
+	// 	}
+	// 	.extension__main__head__settings {
+	// 		.extension__main__head__settings__button {
+	// 			background: none;
+	// 			outline: none;
+	// 			border: none;
+	// 			.extension__main__head__settings__icon {
+	// 				fill: var(--primary-color);
+	// 				width: 30px;
+	// 				height: 30px;
+	// 			}
+	// 		}
+	// 	}
+	// }
 	.extension__main__head {
 		display: flex;
 		flex-direction: column;

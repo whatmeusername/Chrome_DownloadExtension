@@ -13,20 +13,13 @@ function OpenAtNewTab({ StaticData }: { StaticData: StaticData }): ReactElement 
 		};
 
 		return (
-			<button
-				onClick={onClick}
-				className="static__data__item__img__info__item static__data__item__img__info__item__link"
-			>
+			<button onClick={onClick} className="static__data__item__img__info__item static__data__item__img__info__item__link">
 				<LinkIcon className="static__data__item__img__info__item__link__icon" />
 			</button>
 		);
 	} else {
 		return (
-			<a
-				href={StaticData.src}
-				className="static__data__item__img__info__item static__data__item__img__info__item__link"
-				target="_blank"
-			>
+			<a href={StaticData.src} className="static__data__item__img__info__item static__data__item__img__info__item__link" target="_blank">
 				<LinkIcon className="static__data__item__img__info__item__link__icon" />
 			</a>
 		);
@@ -71,9 +64,7 @@ function StaticDataItemElement({
 			<div className="static__data__item__content">
 				<div className="static__data__item__img__wrapper" onClick={SetItemActive}>
 					<div className="static__data__item__img__info">
-						<div className="static__data__item__img__info__item static__data__item__img__info__item__extension">
-							{StaticData.extension}
-						</div>
+						<div className="static__data__item__img__info__item static__data__item__img__info__item__extension">{StaticData.extension}</div>
 						<div className="static__data__item__img__info__item static__data__item__img__info__item__size">
 							{size} {sizeUnit}
 						</div>
@@ -88,12 +79,19 @@ function StaticDataItemElement({
 				</div>
 				<div className="static__data__item__info">
 					<ThinLineElement />
-					<p className="static__data__item__label">{StaticData.alt ?? StaticData.name}</p>
+					<a className="static__data__item__label__href" target="_blank" href={StaticData.src} title={StaticData.src}>
+						<p className="static__data__item__label__href__text">{StaticData.src}</p>
+					</a>
+					<div className="static__data__item__names">
+						<p className="static__data__item__names__label" title={StaticData?.name ?? 'Name is empty'}>
+							Name: {StaticData.name === '' ? 'None' : StaticData.name}
+						</p>
+						<p className="static__data__item__names__label" title={StaticData?.alt ?? 'Alt is empty'}>
+							Alt: {StaticData.alt === '' ? 'None' : StaticData.alt}
+						</p>
+					</div>
 					<div className="static__data__item__buttons">
-						<button
-							className="static__data__item__button static__data__item__button__download"
-							onClick={() => ChromeDownloadFile(StaticData)}
-						>
+						<button className="static__data__item__button static__data__item__button__download" onClick={() => ChromeDownloadFile(StaticData)}>
 							Download file
 						</button>
 					</div>

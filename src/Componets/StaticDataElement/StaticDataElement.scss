@@ -25,14 +25,19 @@
 	.static__data__item {
 		grid-column-start: span 1;
 		width: 320px;
-		height: 400px;
+		height: 420px;
 		border-radius: 8px;
 		box-shadow: 0 0 16px var(--box-shadow-color);
 		padding: 0;
-		transition: background 0.25s ease;
+		border: 2.5px solid transparent;
+		transition: background 0.25s ease, border 0.25s ease;
 
 		&.static__data__item__active {
-			background: var(--static-item-selected);
+			background: var(--gray-color);
+			border: 2.5px solid var(--grey-color);
+			.thin__line__element {
+				background: var(--white-color);
+			}
 		}
 
 		.static__data__item__content {
@@ -43,14 +48,7 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				background-image: linear-gradient(
-						45deg,
-						#efefef 25%,
-						transparent 25%,
-						transparent 75%,
-						#efefef 75%,
-						#efefef
-					),
+				background-image: linear-gradient(45deg, #efefef 25%, transparent 25%, transparent 75%, #efefef 75%, #efefef),
 					linear-gradient(45deg, #efefef 25%, transparent 25%, transparent 75%, #efefef 75%, #efefef);
 				background-size: 26px 26px;
 				background-position: 0 0, 13px 13px;
@@ -106,38 +104,61 @@
 					border-radius: 8px;
 					background-color: var(--gray-color);
 				}
-				.static__data__item__label {
-					height: 35px;
-					margin: 0;
-					color: var(--primary-color);
-					font-weight: 400;
-					letter-spacing: 0.25px;
+				.static__data__item__label__href {
+					height: 25px;
+					text-decoration: none;
+					opacity: 1;
+					transition: opacity 0.25s ease;
+					.static__data__item__label__href__text {
+						color: var(--primary-color);
+						font-size: var(--fontM);
+						font-weight: 400;
+						letter-spacing: 0.25px;
+						margin: 5px 0;
+						white-space: nowrap;
+						overflow: hidden;
+						text-overflow: ellipsis;
+					}
+					&:hover {
+						opacity: 0.8;
+					}
+				}
+				.static__data__item__names {
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					justify-content: space-between;
+					.static__data__item__names__label {
+						padding: 5px 10px;
+						border-radius: 8px;
+						margin: 0;
+						width: 40%;
+						background: var(--grey-color);
+						color: var(--white-color);
+						font-family: sans-serif;
+						font-weight: 500;
+						letter-spacing: 0.5px;
+						font-size: var(--fontS);
 
-					display: -webkit-box;
-					-webkit-line-clamp: 2;
-					-webkit-box-orient: vertical;
-					overflow: hidden;
-					text-overflow: ellipsis;
+						white-space: nowrap;
+						overflow: hidden;
+						text-overflow: ellipsis;
+					}
 				}
 				.static__data__item__buttons {
+					margin-top: 5px;
 					.static__data__item__button__download {
 						width: 100%;
 						border-radius: 8px;
 						color: var(--white-color);
 						font-size: var(--fontX);
-						font-weight: 600;
-						background: rgb(88, 117, 179);
-						background: linear-gradient(
-							90deg,
-							rgba(88, 117, 179, 1) 0%,
-							rgba(61, 93, 181, 1) 35%,
-							rgba(0, 212, 255, 1) 100%
-						);
+						font-weight: 500;
+						background: var(--primary-color);
 						border: none;
 						outline: none;
 						padding: 8px 0;
 						cursor: pointer;
-						letter-spacing: 0.5px;
+						letter-spacing: 1px;
 						font-family: sans-serif;
 						opacity: 1;
 						transition: opacity 0.15s ease-out;
