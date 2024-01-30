@@ -7,20 +7,6 @@ import { LayoutFilter } from '../LayoutFilter/LayoutFilter';
 import { SizeFilter } from '../SizeFilter/SizeFilter';
 import './ExtensionHead.scss';
 import { HeadSelectionElement } from './HeadSelectionElement/HeadSelectionElement';
-import { ThinLineElement } from '../shared/ThinLineElement';
-
-// const DataCategories = [
-// 	{
-// 		name: 'image',
-// 		label: 'Image',
-// 		icon: <ImageIcon className="extension__main__head__category__item__icon" />,
-// 	},
-// 	{
-// 		name: 'files',
-// 		label: 'Files',
-// 		icon: <DocumentIcon className="extension__main__head__category__item__icon" />,
-// 	},
-// ];
 
 function ExtensionHead({
 	StaticResponseData,
@@ -33,7 +19,6 @@ function ExtensionHead({
 
 	return (
 		<div className="extension__main__head__wrapper">
-			<ThinLineElement />
 			<div className="extension__main__head">
 				<div className="extension__main__head__filters">
 					<ExtensionFilter

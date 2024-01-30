@@ -95,10 +95,7 @@ function DownloaderExtension({ staticLinks }: { staticLinks: StaticLinksResult }
 			<div className="extension__main__wrapper">
 				<ExtensionHead StaticResponseData={StaticResponseData} StaticDataResult={StaticDataResult} />
 				{StaticResponseData.current && StaticDataResult ? (
-					<>
-						<div className="static__data__header__filters"></div>
-						<StaticDataElement StaticDataArray={StaticDataResult} selectedItems={selectedItems} setSelectedItems={setSelectedItems} />
-					</>
+					<StaticDataElement StaticDataArray={StaticDataResult} selectedItems={selectedItems} setSelectedItems={setSelectedItems} />
 				) : (
 					<LoadingElement />
 				)}

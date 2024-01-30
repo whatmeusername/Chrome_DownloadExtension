@@ -21,14 +21,7 @@ function App() {
 
 	return (
 		<div className="app">
-			{!IS_PROD ? (
-				<iframe
-					src="HTML_TEST_PAGE/index.html"
-					className="test__iframe"
-					ref={testRef}
-					onLoad={() => setLoaded(1)}
-				/>
-			) : null}
+			{!IS_PROD ? <iframe src="HTML_TEST_PAGE/index.html" className="test__iframe" ref={testRef} onLoad={() => setLoaded(1)} /> : null}
 			{isLoaded && staticLinks !== null ? <DownloaderExtension staticLinks={staticLinks} /> : null}
 		</div>
 	);

@@ -32,7 +32,7 @@ type StaticLinksData = {
 };
 
 interface StaticData {
-	blob: Blob | null;
+	blob: Blob;
 	type: 'data' | 'src';
 	src: string;
 	name: string;
@@ -68,13 +68,5 @@ interface GetAllStaticResponse {
 	size: { height: { min: number; max: number }; width: { min: number; max: number } };
 }
 
-export type {
-	StaticData,
-	StaticLinksResult,
-	StaticLinksSrc,
-	StaticLinksData,
-	StaticDataSizeFilter,
-	FilterContextType,
-	GetAllStaticResponse,
-};
+export type { StaticData, StaticLinksResult, StaticLinksSrc, StaticLinksData, StaticDataSizeFilter, FilterContextType, GetAllStaticResponse };
 export { StaticExtensionTypeEnum, StaticImageLayout };

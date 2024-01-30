@@ -1,11 +1,5 @@
 import { ALOWED_IMAGE_EXTENSION } from '../consts/allowed_extensions';
-import {
-	StaticData,
-	StaticImageLayout,
-	StaticExtensionTypeEnum,
-	StaticLinksResult,
-	GetAllStaticResponse,
-} from '../interface';
+import { StaticData, StaticImageLayout, StaticExtensionTypeEnum, StaticLinksResult, GetAllStaticResponse } from '../interface';
 
 const GetFiltersDataFromResult = (results: StaticData[]) => {
 	const layoutResult: { [K: string]: number } = {};
@@ -51,7 +45,7 @@ const GetFetchPromise = (res: Response): Promise<{ blob: Blob; extension: string
 
 const ValidateExtension = (extension: string | null | undefined): boolean => {
 	extension = extension?.trim();
-	return !extension && ALOWED_IMAGE_EXTENSION.includes(extension ?? '');
+	return extension !== undefined && extension !== '' && ALOWED_IMAGE_EXTENSION.includes(extension ?? '');
 };
 
 const GetImageType = (extension: string | undefined | null): StaticExtensionTypeEnum => {

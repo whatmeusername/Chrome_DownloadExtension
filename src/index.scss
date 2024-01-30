@@ -34,6 +34,8 @@ button {
 	outline: none;
 }
 .app {
+	max-height: 600px;
+	overflow: hidden;
 	display: flex;
 	flex-direction: row;
 }
@@ -42,6 +44,6 @@ button {
 	padding: 0;
 	height: 100vw;
 	max-height: 100vh;
-	width: 0;
+	width: 300px;
 	overflow: hidden;
 }
