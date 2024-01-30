@@ -61,5 +61,20 @@ interface FilterContextType {
 	setSelectedItems: React.Dispatch<React.SetStateAction<StaticData[]>>;
 }
 
-export type { StaticData, StaticLinksResult, StaticLinksSrc, StaticLinksData, StaticDataSizeFilter, FilterContextType };
+interface GetAllStaticResponse {
+	data: StaticData[];
+	extensions: { [K: string]: number };
+	layout: { [K: string]: number };
+	size: { height: { min: number; max: number }; width: { min: number; max: number } };
+}
+
+export type {
+	StaticData,
+	StaticLinksResult,
+	StaticLinksSrc,
+	StaticLinksData,
+	StaticDataSizeFilter,
+	FilterContextType,
+	GetAllStaticResponse,
+};
 export { StaticExtensionTypeEnum, StaticImageLayout };
