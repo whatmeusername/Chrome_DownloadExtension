@@ -28,6 +28,7 @@ const GetFiltersDataFromResult = (results: StaticData[]) => {
 	return { layoutResult, extensionsObject, sizeResults };
 };
 
+//@ts-ignore
 const GetFetchPromise = (res: Response): Promise<{ blob: Blob; extension: string | null }> => {
 	return new Promise(async (resolve) => {
 		const blob = await res.blob();
@@ -42,18 +43,18 @@ const GetFetchPromise = (res: Response): Promise<{ blob: Blob; extension: string
 		});
 	});
 };
-
+//@ts-ignore
 const ValidateExtension = (extension: string | null | undefined): boolean => {
 	extension = extension?.trim();
 	return extension !== undefined && extension !== '' && ALOWED_IMAGE_EXTENSION.includes(extension ?? '');
 };
-
+//@ts-ignore
 const GetImageType = (extension: string | undefined | null): StaticExtensionTypeEnum => {
 	return extension === StaticExtensionTypeEnum.SVG ? StaticExtensionTypeEnum.SVG : StaticExtensionTypeEnum.IMAGE;
 };
 async function getAllStaticURLS(staticLinks: StaticLinksResult): Promise<GetAllStaticResponse> {
 	const promiseQuery = [];
-
+	//@ts-ignore
 	const getImageLayout = (width: number, height: number): StaticImageLayout => {
 		if (width === height) return StaticImageLayout.SQUARE;
 		else if (width > height) return StaticImageLayout.WIDE;
@@ -117,7 +118,7 @@ async function getAllStaticURLS(staticLinks: StaticLinksResult): Promise<GetAllS
 				}),
 		);
 	}
-
+	//@ts-ignore
 	const results = (await Promise.all(promiseQuery)).filter((r) => r !== undefined) as StaticData[];
 	const { layoutResult, extensionsObject, sizeResults } = GetFiltersDataFromResult(results);
 

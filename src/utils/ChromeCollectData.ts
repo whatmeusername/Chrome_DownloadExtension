@@ -11,10 +11,20 @@ function ChromeCollectData(
 					target: { tabId: tab.id },
 					func: () => {
 						const CollectAllStaticLinks = (document: Document): StaticLinksResult => {
+							const protocol = window?.location?.protocol ?? '';
 							const imagesFilesSrc: string[] = [];
 							const cssURLRegex = /url\(['"]?([^")]+)/g;
 							const result: StaticLinksResult = { data: [], src: [] };
-							const MAX_DEPTH = 3;
+							const MAX_DEPTH = 4;
+
+							const CheckAbsolutePath = (url: string): string => {
+								if (url.startsWith('//')) url = protocol + url;
+								return url;
+							};
+
+							const isHttpUrl = (url: string): boolean => {
+								return url.startsWith('//') || url.startsWith('http') || url.startsWith('https');
+							};
 
 							const IsNotValidImageData = (image: HTMLImageElement): boolean => {
 								const isLessThatMin = image.naturalWidth < 10 || image.naturalHeight < 10;
@@ -30,6 +40,7 @@ function ChromeCollectData(
 									if (currentURL.startsWith('url') || imagesFilesSrc.includes(currentURL)) continue;
 									imagesFilesSrc.push(currentURL);
 
+									// VALIDATE EXTENSION OR RELATIVE PATH
 									if (currentURL.startsWith('data:')) {
 										result.data.push({
 											type: 'data',
@@ -38,10 +49,10 @@ function ChromeCollectData(
 											width: 0,
 											height: 0,
 										});
-									} else if (currentURL.startsWith('http') || currentURL.startsWith('https')) {
+									} else if (isHttpUrl(currentURL)) {
 										result.src.push({
 											type: 'src',
-											src: currentURL,
+											src: CheckAbsolutePath(currentURL),
 											alt: '',
 											width: 0,
 											height: 0,
@@ -56,16 +67,19 @@ function ChromeCollectData(
 
 								const CollectFromCSSBackground = () => {
 									const styleSheets = el.nodeType === el.DOCUMENT_NODE ? (el as Document).styleSheets : (el as Element).ownerDocument.styleSheets;
-									if (styleSheets.length > 0) {
-										const rules = styleSheets[0].cssRules as unknown as CSSStyleRule[];
-										for (let i = 0; i < rules.length; i++) {
-											const backgroundImageMatch: string[] = cssURLRegex.exec(rules[i].style?.backgroundImage) ?? [];
-											const backgroundMatch: string[] = cssURLRegex.exec(rules[i].style?.background) ?? [];
+									if (styleSheets.length === 0) return;
+									for (let i = 0; i < styleSheets.length; i++) {
+										try {
+											const rules = styleSheets[i].cssRules as unknown as CSSStyleRule[];
+											for (let i = 0; i < rules.length; i++) {
+												const backgroundImageMatch: string[] = cssURLRegex.exec(rules[i].style?.backgroundImage) ?? [];
+												const backgroundMatch: string[] = cssURLRegex.exec(rules[i].style?.background) ?? [];
 
-											const cssRuleImages: string[] = ([] as string[]).concat(backgroundImageMatch, backgroundMatch);
+												const cssRuleImages: string[] = ([] as string[]).concat(backgroundImageMatch, backgroundMatch);
 
-											ProcessCssStyles(cssRuleImages, result);
-										}
+												ProcessCssStyles(cssRuleImages, result);
+											}
+										} catch {}
 									}
 								};
 
@@ -88,7 +102,7 @@ function ChromeCollectData(
 										} else {
 											result.src.push({
 												type: 'src',
-												src: image.src,
+												src: CheckAbsolutePath(image.src),
 												alt: image.alt,
 												width: image.naturalWidth,
 												height: image.naturalHeight,
@@ -101,14 +115,14 @@ function ChromeCollectData(
 									const svgs = el.querySelectorAll('svg');
 									for (let i = 0; i < svgs.length; i++) {
 										const serializedSVG = new XMLSerializer().serializeToString(svgs[i]);
-										const dataURL = 'data:image/svg+xml;base64,' + window.btoa(serializedSVG);
+										const dataURL = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(serializedSVG)));
 
 										if (imagesFilesSrc.includes(dataURL)) continue;
 										imagesFilesSrc.push(dataURL);
 
 										result.data.push({
 											type: 'data',
-											src: dataURL,
+											src: CheckAbsolutePath(dataURL),
 											alt: '',
 											width: 0,
 											height: 0,
@@ -129,6 +143,16 @@ function ChromeCollectData(
 									}
 								};
 
+								const CollectFromStyleTags = () => {
+									const styleTags = el.querySelectorAll('style');
+									if (styleTags.length === 0) return;
+									for (let i = 0; i < styleTags.length; i++) {
+										const styleTag = styleTags[i];
+										const cssRuleImages: string[] = cssURLRegex.exec(styleTag.innerText) ?? [];
+										ProcessCssStyles(cssRuleImages, result);
+									}
+								};
+
 								const ProcessOpenShadowRoots = () => {
 									function findShadowRoots(ele: Element): any {
 										return [ele, ...ele.querySelectorAll('*')]
@@ -136,15 +160,6 @@ function ChromeCollectData(
 											.flatMap((e) => [e.shadowRoot, ...findShadowRoots(e.shadowRoot as any)]);
 									}
 									findShadowRoots(el as any).forEach((root: any) => ProcessElement(root, result, depth + 1));
-								};
-
-								const CollectFromStyleTags = () => {
-									const styleTags = el.querySelectorAll('style');
-									for (let i = 0; i < styleTags.length; i++) {
-										const styleTag = styleTags[i];
-										const cssRuleImages: string[] = cssURLRegex.exec(styleTag.innerText) ?? [];
-										ProcessCssStyles(cssRuleImages, result);
-									}
 								};
 
 								CollectFromCSSBackground();
