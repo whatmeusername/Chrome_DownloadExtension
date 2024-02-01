@@ -13,6 +13,7 @@ enum StaticImageLayout {
 interface StaticLinksResult {
 	src: StaticLinksSrc[];
 	data: StaticLinksData[];
+	count: number;
 }
 
 type StaticLinksSrc = {

@@ -9,7 +9,6 @@
 		border: 2px solid var(--gray-color);
 		padding: 5px 20px;
 		width: 100%;
-		cursor: pointer;
 		background-color: var(--white-color);
 		border-radius: 8px;
 		transition: box-shadow 0.3s ease;
@@ -43,14 +42,26 @@
 				transform: rotateZ(-270deg);
 			}
 		}
+	}
 
-		&:hover {
-			box-shadow: 0 0 16px var(--box-shadow-color);
-			.modal__label {
-				color: var(--standard-color);
-			}
-			.modal__toggle__arrow__icon {
-				fill: var(--standard-color);
+	&.modal__wrapper__disabled {
+		.modal__toggle__button {
+			cursor: unset;
+			opacity: 0.8;
+		}
+	}
+
+	&.modal__wrapper__enabled {
+		.modal__toggle__button {
+			cursor: pointer;
+			&:hover {
+				box-shadow: 0 0 16px var(--box-shadow-color);
+				.modal__label {
+					color: var(--standard-color);
+				}
+				.modal__toggle__arrow__icon {
+					fill: var(--standard-color);
+				}
 			}
 		}
 	}

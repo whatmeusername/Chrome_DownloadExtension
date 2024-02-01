@@ -9,5 +9,6 @@ import ExtensionLogo from '../../icons/ExtensionLogo.svg?react';
 import SettingsIcon from '../../icons/settings.svg?react';
 import ImageIcon from '../../icons/image.svg?react';
 import DocumentIcon from '../../icons/document.svg?react';
+import NoImageIcon from '../../icons/noimage.svg?react';
 
-export { CheckmarkIcon, ConvertIcon, DownArrowIcon, LinkIcon, DownloadIcon, ExtensionLogo, SettingsIcon, ImageIcon, DocumentIcon };
+export { CheckmarkIcon, ConvertIcon, DownArrowIcon, LinkIcon, DownloadIcon, ExtensionLogo, SettingsIcon, ImageIcon, DocumentIcon, NoImageIcon };

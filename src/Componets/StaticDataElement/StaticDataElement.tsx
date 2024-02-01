@@ -2,8 +2,9 @@ import { ReactElement } from 'react';
 import { StaticData } from '../../interface';
 import { ChromeDownloadFile } from '../../utils/ChromeDownloadFile';
 import './StaticDataElement.scss';
-import { LinkIcon } from '../icons';
+import { LinkIcon, NoImageIcon } from '../icons';
 import { ThinLineElement } from '../shared/ThinLineElement';
+import { CalculateFileSize } from '../../utils/CalculateFileSize';
 
 function OpenAtNewTab({ StaticData }: { StaticData: StaticData }): ReactElement {
 	if (StaticData.type === 'data') {
@@ -36,20 +37,7 @@ function StaticDataItemElement({
 	setSelectedItems: React.Dispatch<React.SetStateAction<StaticData[]>>;
 }): ReactElement {
 	const activeIndex = selectedItems.findIndex((i) => i.src === StaticData.src);
-	let size, sizeUnit;
-	if (StaticData.size !== null) {
-		if (Math.floor(StaticData.size / 1024) > 0) {
-			size = Math.floor(StaticData.size / 1024);
-			sizeUnit = 'KB';
-			if (Math.floor(size / 1024) > 0) {
-				size = Math.floor(StaticData.size / 1024);
-				sizeUnit = 'MB';
-			}
-		} else {
-			sizeUnit = 'B';
-			size = StaticData.size;
-		}
-	}
+	const { size, unit } = CalculateFileSize(StaticData.size);
 
 	const SetItemActive = () => {
 		if (activeIndex !== -1) {
@@ -65,9 +53,11 @@ function StaticDataItemElement({
 				<div className="static__data__item__img__wrapper" onClick={SetItemActive}>
 					<div className="static__data__item__img__info">
 						<div className="static__data__item__img__info__item static__data__item__img__info__item__extension">{StaticData.extension}</div>
-						<div className="static__data__item__img__info__item static__data__item__img__info__item__size">
-							{size} {sizeUnit}
-						</div>
+						{StaticData.size ? (
+							<div className="static__data__item__img__info__item static__data__item__img__info__item__size">
+								{size} {unit}
+							</div>
+						) : null}
 						{StaticData.type === 'src' ? (
 							<div className="static__data__item__img__info__item static__data__item__img__info__item__sizes">
 								{StaticData.width}x{StaticData.height}
@@ -111,15 +101,24 @@ function StaticDataElement({
 }): ReactElement {
 	return (
 		<div className="static__data__wrapper">
-			{StaticDataArray.map((StaticData, i) =>
-				StaticData ? (
-					<StaticDataItemElement
-						StaticData={StaticData}
-						key={`static__data__item__${i}`}
-						selectedItems={selectedItems}
-						setSelectedItems={setSelectedItems}
-					/>
-				) : null,
+			{StaticDataArray.length > 0 ? (
+				<div className="static__data__content">
+					{StaticDataArray.map((StaticData, i) =>
+						StaticData ? (
+							<StaticDataItemElement
+								StaticData={StaticData}
+								key={`static__data__item__${i}`}
+								selectedItems={selectedItems}
+								setSelectedItems={setSelectedItems}
+							/>
+						) : null,
+					)}
+				</div>
+			) : (
+				<div className="static__data__empty">
+					<NoImageIcon className="static__data__empty__icon" />
+					<p className="static__data__empty__label">No images was found</p>
+				</div>
 			)}
 		</div>
 	);

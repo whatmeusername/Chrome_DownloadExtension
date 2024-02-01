@@ -71,6 +71,7 @@ function DownloaderExtension({ staticLinks }: { staticLinks: StaticLinksResult }
 	}, [selectedExtension, selectedLayout, selectedSize]);
 
 	useEffect(() => {
+		if (!staticLinks) return;
 		getAllStaticURLS(staticLinks).then((result) => {
 			if (result.data.length > 0) {
 				StaticResponseData.current = result;
@@ -97,7 +98,7 @@ function DownloaderExtension({ staticLinks }: { staticLinks: StaticLinksResult }
 				{StaticResponseData.current && StaticDataResult ? (
 					<StaticDataElement StaticDataArray={StaticDataResult} selectedItems={selectedItems} setSelectedItems={setSelectedItems} />
 				) : (
-					<LoadingElement />
+					<LoadingElement count={staticLinks?.count} />
 				)}
 			</div>
 		</FilterContextElement>

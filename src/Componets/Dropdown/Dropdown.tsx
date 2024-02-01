@@ -20,7 +20,7 @@ function Dropdown({ children, header, disabled }: { children?: ReactElement | Re
 	}, [toggled]);
 
 	return (
-		<div className="modal__wrapper" ref={modalContentRef}>
+		<div className={`modal__wrapper ${disabled ? 'modal__wrapper__disabled' : 'modal__wrapper__enabled'}`} ref={modalContentRef}>
 			<button className="modal__toggle__button" onClick={disabled ? undefined : () => setToggle()}>
 				<p className="modal__label">{header}</p>
 			</button>

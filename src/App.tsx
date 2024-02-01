@@ -8,21 +8,33 @@ const IS_PROD = import.meta.env.PROD;
 
 function App() {
 	const testRef = useRef<HTMLIFrameElement>(null!);
-	const [isLoaded, setLoaded] = useState(0);
 	const [staticLinks, setStaticLinks] = useState<StaticLinksResult>(null!);
 
 	useEffect(() => {
 		if (IS_PROD) {
-			ChromeCollectData(setLoaded, setStaticLinks);
+			ChromeCollectData(setStaticLinks);
 		} else {
-			setStaticLinks(CollectAllStaticLinks(testRef.current.contentDocument as Document));
+			CollectAllStaticLinks(testRef.current.contentDocument).then((res) => {
+				setStaticLinks(res);
+			});
 		}
-	}, [isLoaded]);
+	}, []);
 
 	return (
 		<div className="app">
-			{!IS_PROD ? <iframe src="HTML_TEST_PAGE/index.html" className="test__iframe" ref={testRef} onLoad={() => setLoaded(1)} /> : null}
-			{isLoaded && staticLinks !== null ? <DownloaderExtension staticLinks={staticLinks} /> : null}
+			{!IS_PROD ? (
+				<iframe
+					src="HTML_TEST_PAGE/index.html"
+					className="test__iframe"
+					ref={testRef}
+					onLoad={() =>
+						CollectAllStaticLinks(testRef.current.contentDocument).then((res) => {
+							setStaticLinks(res);
+						})
+					}
+				/>
+			) : null}
+			<DownloaderExtension staticLinks={staticLinks} />
 		</div>
 	);
 }

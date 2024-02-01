@@ -1,20 +1,21 @@
 import { StaticLinksResult } from '../interface';
 
-function ChromeCollectData(
-	setLoaded: React.Dispatch<React.SetStateAction<number>>,
-	setStaticLinks: React.Dispatch<React.SetStateAction<StaticLinksResult>>,
-) {
+function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<StaticLinksResult>>) {
 	chrome.tabs.query({ active: true }).then(([tab]) => {
 		if (tab && tab.id !== undefined) {
 			chrome.scripting
 				.executeScript({
 					target: { tabId: tab.id },
 					func: () => {
-						const CollectAllStaticLinks = (document: Document): StaticLinksResult => {
+						const CollectAllStaticLinks = async (document: Document | null | undefined): Promise<StaticLinksResult> => {
+							const result: StaticLinksResult = { data: [], src: [], count: 0 };
+							if (!document) return result;
+
 							const protocol = window?.location?.protocol ?? '';
 							const imagesFilesSrc: string[] = [];
-							const cssURLRegex = /url\(['"]?([^")]+)/g;
-							const result: StaticLinksResult = { data: [], src: [] };
+							const cssURLRegex = /(?<=url\()['"]?([^")]+)/g;
+
+							const ALLOWED_IMAGE_EXTENSION = ['jpeg', 'jpg', 'webp', 'png', 'gif', 'svg', 'bmp', 'ico', 'tiff'];
 							const MAX_DEPTH = 4;
 
 							const CheckAbsolutePath = (url: string): string => {
@@ -26,21 +27,51 @@ function ChromeCollectData(
 								return url.startsWith('//') || url.startsWith('http') || url.startsWith('https');
 							};
 
-							const IsNotValidImageData = (image: HTMLImageElement): boolean => {
-								const isLessThatMin = image.naturalWidth < 10 || image.naturalHeight < 10;
-								const isZeroSize = image.naturalWidth === 0 || image.naturalHeight === 0;
-								return isLessThatMin || isZeroSize || imagesFilesSrc.includes(image.src);
+							const IsNotValidImageData = (el: HTMLImageElement): boolean => {
+								if (el.nodeName === 'img') {
+									const isLessThatMin = el.naturalWidth < 10 || el.naturalHeight < 10;
+									const isZeroSize = el.naturalWidth === 0 || el.naturalHeight === 0;
+									return isLessThatMin || isZeroSize || imagesFilesSrc.includes(el.src);
+								}
+								return imagesFilesSrc.includes(el.src);
 							};
 
-							function ProcessCssStyles(cssRuleImages: string[], result: StaticLinksResult): StaticLinksResult {
+							const ValidateExtension = (src: string): boolean => {
+								const extension = src
+									.split(/\.([^\./\?\#]+)($|\?|\#)/g)?.[1]
+									?.trim()
+									?.toLowerCase();
+								if (extension) {
+									return ALLOWED_IMAGE_EXTENSION.includes(extension);
+								}
+								return true;
+							};
+
+							function ProcessCssStyles(source: HTMLElement | CSSRule | string, result: StaticLinksResult): StaticLinksResult {
+								let cssRuleImages: string[] = [];
+								if ((source as HTMLElement).tagName) {
+									const style = (source as HTMLElement).style;
+									const backgroundImageMatch: string[] = style.background.match(cssURLRegex) ?? [];
+									const backgroundMatch: string[] = style.backgroundImage.match(cssURLRegex) ?? [];
+									cssRuleImages = cssRuleImages.concat(backgroundImageMatch, backgroundMatch);
+								} else if ((source as CSSStyleRule)?.cssText) {
+									const style = (source as CSSStyleRule).style;
+
+									const backgroundImageMatch = style?.backgroundImage?.match(cssURLRegex) ?? [];
+									const backgroundMatch = style?.background?.match(cssURLRegex) ?? [];
+									cssRuleImages = cssRuleImages.concat(backgroundImageMatch, backgroundMatch);
+								} else if (typeof source === 'string') {
+									cssRuleImages = source.match(cssURLRegex) ?? [];
+								}
+
 								if (cssRuleImages.length === 0) return result;
 								for (let j = 0; j < cssRuleImages.length; j++) {
 									const currentURL = cssRuleImages[j];
 
 									if (currentURL.startsWith('url') || imagesFilesSrc.includes(currentURL)) continue;
+									if (!ValidateExtension(currentURL)) continue;
 									imagesFilesSrc.push(currentURL);
 
-									// VALIDATE EXTENSION OR RELATIVE PATH
 									if (currentURL.startsWith('data:')) {
 										result.data.push({
 											type: 'data',
@@ -62,39 +93,41 @@ function ChromeCollectData(
 								return result;
 							}
 
-							function ProcessElement(el: HTMLElement | Document, result: StaticLinksResult, depth: number): StaticLinksResult {
+							async function ProcessElement(el: HTMLElement | Document, result: StaticLinksResult, depth: number): Promise<StaticLinksResult> {
 								if (depth === MAX_DEPTH) return result;
 
-								const CollectFromCSSBackground = () => {
+								const CollectFromCSSBackground = async () => {
 									const styleSheets = el.nodeType === el.DOCUMENT_NODE ? (el as Document).styleSheets : (el as Element).ownerDocument.styleSheets;
 									if (styleSheets.length === 0) return;
 									for (let i = 0; i < styleSheets.length; i++) {
 										try {
+											(styleSheets[i] as any).crossorigin = 'anonymous';
 											const rules = styleSheets[i].cssRules as unknown as CSSStyleRule[];
 											for (let i = 0; i < rules.length; i++) {
-												const backgroundImageMatch: string[] = cssURLRegex.exec(rules[i].style?.backgroundImage) ?? [];
-												const backgroundMatch: string[] = cssURLRegex.exec(rules[i].style?.background) ?? [];
-
-												const cssRuleImages: string[] = ([] as string[]).concat(backgroundImageMatch, backgroundMatch);
-
-												ProcessCssStyles(cssRuleImages, result);
+												ProcessCssStyles(rules[i], result);
 											}
-										} catch {}
+										} catch {
+											const s = styleSheets[i];
+											if (s.href) {
+												const text = await (await fetch(s.href)).text();
+												ProcessCssStyles(text, result);
+											}
+										}
 									}
 								};
 
-								const CollectFromImgTags = () => {
-									const images = el.querySelectorAll('img');
-									for (let i = 0; i < images.length; i++) {
-										const image = images[i];
-										if (IsNotValidImageData(image)) continue;
+								const CollectFromSrc = () => {
+									const elements = el.querySelectorAll('[src]');
+									for (let i = 0; i < elements.length; i++) {
+										const el = elements[i] as HTMLImageElement;
+										if (IsNotValidImageData(el as any)) continue;
+										if (!ValidateExtension(el.src)) continue;
 
-										imagesFilesSrc.push(image.src);
-
-										if (image.src.startsWith('data:')) {
+										imagesFilesSrc.push(el.src);
+										if (el.src.startsWith('data:')) {
 											result.data.push({
 												type: 'data',
-												src: image.src,
+												src: el.src,
 												alt: '',
 												width: 0,
 												height: 0,
@@ -102,10 +135,10 @@ function ChromeCollectData(
 										} else {
 											result.src.push({
 												type: 'src',
-												src: CheckAbsolutePath(image.src),
-												alt: image.alt,
-												width: image.naturalWidth,
-												height: image.naturalHeight,
+												src: CheckAbsolutePath(el.src),
+												alt: el.alt,
+												width: el.naturalWidth,
+												height: el.naturalHeight,
 											});
 										}
 									}
@@ -133,13 +166,7 @@ function ChromeCollectData(
 								const CollectFromInlineStyle = () => {
 									const elementsWithStyle = el.querySelectorAll('[style]');
 									for (let i = 0; i < elementsWithStyle.length; i++) {
-										const elWithStyle = elementsWithStyle[i] as HTMLElement;
-
-										const backgroundImageMatch: string[] = cssURLRegex.exec(elWithStyle.style.background) ?? [];
-										const backgroundMatch: string[] = cssURLRegex.exec(elWithStyle.style.backgroundImage) ?? [];
-										const cssRuleImages: string[] = ([] as string[]).concat(backgroundImageMatch, backgroundMatch);
-
-										ProcessCssStyles(cssRuleImages, result);
+										ProcessCssStyles(elementsWithStyle[i] as HTMLElement, result);
 									}
 								};
 
@@ -147,9 +174,7 @@ function ChromeCollectData(
 									const styleTags = el.querySelectorAll('style');
 									if (styleTags.length === 0) return;
 									for (let i = 0; i < styleTags.length; i++) {
-										const styleTag = styleTags[i];
-										const cssRuleImages: string[] = cssURLRegex.exec(styleTag.innerText) ?? [];
-										ProcessCssStyles(cssRuleImages, result);
+										ProcessCssStyles(styleTags[i].innerText, result);
 									}
 								};
 
@@ -162,8 +187,8 @@ function ChromeCollectData(
 									findShadowRoots(el as any).forEach((root: any) => ProcessElement(root, result, depth + 1));
 								};
 
-								CollectFromCSSBackground();
-								CollectFromImgTags();
+								await CollectFromCSSBackground();
+								CollectFromSrc();
 								CollectFromSVGS();
 								CollectFromInlineStyle();
 								CollectFromStyleTags();
@@ -173,13 +198,16 @@ function ChromeCollectData(
 								return result;
 							}
 
-							return ProcessElement(document, result, 1);
+							await ProcessElement(document, result, 1);
+
+							result.count = result.data.length + result.src.length;
+							return result;
 						};
+
 						return CollectAllStaticLinks(document);
 					},
 				})
 				.then((data) => {
-					setLoaded(1);
 					setStaticLinks(data[0].result);
 				});
 		}

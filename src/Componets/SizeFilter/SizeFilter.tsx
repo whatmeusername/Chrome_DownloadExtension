@@ -5,6 +5,10 @@ import { GetAllStaticResponse } from '../../utils/getAllStaticURLS';
 import { StaticDataSizeFilter } from '../../interface';
 import { ThinLineElement } from '../shared/ThinLineElement';
 
+const isDisableSizeFilter = (sizeData: GetAllStaticResponse['size']): boolean => {
+	return sizeData.height.max === null && sizeData.height.min === null && sizeData.width.min === null && sizeData.width.max === null;
+};
+
 function SizeFilter({
 	selectedSize,
 	setSelectedSize,
@@ -46,10 +50,11 @@ function SizeFilter({
 		}
 	};
 
+	const isDisabled = sizeData === undefined || isDisableSizeFilter(sizeData);
 	return (
 		<div className="static__data__header__filter">
-			<Dropdown header="Size" disabled={sizeData === undefined}>
-				{sizeData ? (
+			<Dropdown header="Size" disabled={isDisabled}>
+				{!isDisabled ? (
 					<form className="static__data__header__filter__content static__data__header__filter__allowed__size" ref={formRef}>
 						<div className="size__filter__wrapper size__filter__width">
 							<div className="size__filter__header__wrapper">
