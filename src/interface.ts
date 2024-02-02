@@ -13,6 +13,7 @@ enum StaticImageLayout {
 interface StaticLinksResult {
 	src: StaticLinksSrc[];
 	data: StaticLinksData[];
+	iframesSrc: string[];
 	count: number;
 }
 
@@ -20,16 +21,16 @@ type StaticLinksSrc = {
 	type: 'src';
 	src: string;
 	alt: string;
-	width: number;
-	height: number;
+	width: number | null;
+	height: number | null;
 };
 
 type StaticLinksData = {
 	type: 'data';
 	src: string;
 	alt: string;
-	width: number;
-	height: number;
+	width: number | null;
+	height: number | null;
 };
 
 interface StaticData {

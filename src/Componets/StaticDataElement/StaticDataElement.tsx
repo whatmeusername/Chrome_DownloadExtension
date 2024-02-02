@@ -27,6 +27,25 @@ function OpenAtNewTab({ StaticData }: { StaticData: StaticData }): ReactElement 
 	}
 }
 
+function SizeElement({ fileSize }: { fileSize: number | null }): ReactElement | null {
+	if (!fileSize) return null;
+	const { size, unit } = CalculateFileSize(fileSize);
+	return (
+		<div className="static__data__item__img__info__item static__data__item__img__info__item__size">
+			{size} {unit}
+		</div>
+	);
+}
+
+function DimensionElement({ StaticData }: { StaticData: StaticData }): ReactElement | null {
+	const { width, height } = StaticData;
+	if (width === null || height === null || width === 0 || height == 0) return null;
+	return (
+		<div className="static__data__item__img__info__item static__data__item__img__info__item__sizes">
+			{width}x{height}
+		</div>
+	);
+}
 function StaticDataItemElement({
 	StaticData,
 	selectedItems,
@@ -37,7 +56,6 @@ function StaticDataItemElement({
 	setSelectedItems: React.Dispatch<React.SetStateAction<StaticData[]>>;
 }): ReactElement {
 	const activeIndex = selectedItems.findIndex((i) => i.src === StaticData.src);
-	const { size, unit } = CalculateFileSize(StaticData.size);
 
 	const SetItemActive = () => {
 		if (activeIndex !== -1) {
@@ -53,16 +71,8 @@ function StaticDataItemElement({
 				<div className="static__data__item__img__wrapper" onClick={SetItemActive}>
 					<div className="static__data__item__img__info">
 						<div className="static__data__item__img__info__item static__data__item__img__info__item__extension">{StaticData.extension}</div>
-						{StaticData.size ? (
-							<div className="static__data__item__img__info__item static__data__item__img__info__item__size">
-								{size} {unit}
-							</div>
-						) : null}
-						{StaticData.type === 'src' ? (
-							<div className="static__data__item__img__info__item static__data__item__img__info__item__sizes">
-								{StaticData.width}x{StaticData.height}
-							</div>
-						) : null}
+						<SizeElement fileSize={StaticData.size} />
+						<DimensionElement StaticData={StaticData} />
 						<OpenAtNewTab StaticData={StaticData} />
 					</div>
 					<img className="static__data__item__img" src={StaticData.src} alt={StaticData.alt ?? undefined} />

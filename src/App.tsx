@@ -14,7 +14,7 @@ function App() {
 		if (IS_PROD) {
 			ChromeCollectData(setStaticLinks);
 		} else {
-			CollectAllStaticLinks(testRef.current.contentDocument).then((res) => {
+			CollectAllStaticLinks(undefined, testRef.current.contentDocument, false).then((res) => {
 				setStaticLinks(res);
 			});
 		}
@@ -28,7 +28,7 @@ function App() {
 					className="test__iframe"
 					ref={testRef}
 					onLoad={() =>
-						CollectAllStaticLinks(testRef.current.contentDocument).then((res) => {
+						CollectAllStaticLinks(undefined, testRef.current.contentDocument, false).then((res) => {
 							setStaticLinks(res);
 						})
 					}

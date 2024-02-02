@@ -4,12 +4,21 @@
 	background: var(--primary-color);
 	border: none;
 	outline: none;
-	cursor: pointer;
 	opacity: 1;
 	transition: opacity 0.15s ease-out;
-	&:hover {
-		opacity: 0.9;
+
+	&.static__data__select__all__button__disabled {
+		cursor: initial;
+		opacity: 0.8;
 	}
+
+	&.static__data__select__all__button__enabled {
+		cursor: pointer;
+		&:hover {
+			opacity: 0.9;
+		}
+	}
+
 	.static__data__select__all__button__label {
 		letter-spacing: 0.5px;
 		font-family: sans-serif;

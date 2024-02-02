@@ -1,4 +1,5 @@
 import { StaticLinksResult } from '../interface';
+import { CollectAllStaticLinks, FilterStaticLinks } from './CollectAllStaticLinks';
 
 function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<StaticLinksResult>>) {
 	chrome.tabs.query({ active: true }).then(([tab]) => {
@@ -7,16 +8,28 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 				.executeScript({
 					target: { tabId: tab.id },
 					func: () => {
-						const CollectAllStaticLinks = async (document: Document | null | undefined): Promise<StaticLinksResult> => {
-							const result: StaticLinksResult = { data: [], src: [], count: 0 };
-							if (!document) return result;
+						const CollectAllStaticLinks = async (
+							result: StaticLinksResult | undefined,
+							document: Document | null | undefined | string,
+							isIFrame: boolean,
+						): Promise<StaticLinksResult> => {
+							result = result ?? { data: [], src: [], count: 0, iframesSrc: [] };
 
+							if (typeof document === 'string' && isIFrame) {
+								try {
+									const htmlText = await (await fetch(document)).text();
+									document = new DOMParser().parseFromString(htmlText, 'text/html');
+								} catch {
+									return result;
+								}
+							} else if (!document) return result;
+							else document = document as Document;
+
+							const windowDomain = window.location.host;
 							const protocol = window?.location?.protocol ?? '';
 							const imagesFilesSrc: string[] = [];
 							const cssURLRegex = /(?<=url\()['"]?([^")]+)/g;
-
 							const ALLOWED_IMAGE_EXTENSION = ['jpeg', 'jpg', 'webp', 'png', 'gif', 'svg', 'bmp', 'ico', 'tiff'];
-							const MAX_DEPTH = 4;
 
 							const CheckAbsolutePath = (url: string): string => {
 								if (url.startsWith('//')) url = protocol + url;
@@ -66,52 +79,46 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 
 								if (cssRuleImages.length === 0) return result;
 								for (let j = 0; j < cssRuleImages.length; j++) {
-									const currentURL = cssRuleImages[j];
+									let currentURL = cssRuleImages[j];
 
-									if (currentURL.startsWith('url') || imagesFilesSrc.includes(currentURL)) continue;
+									if (currentURL.startsWith('"')) currentURL = currentURL.slice(1);
+									if (imagesFilesSrc.includes(currentURL)) continue;
 									if (!ValidateExtension(currentURL)) continue;
 									imagesFilesSrc.push(currentURL);
 
-									if (currentURL.startsWith('data:')) {
-										result.data.push({
-											type: 'data',
-											src: currentURL,
+									const isUrlData = currentURL.startsWith('data:');
+									const insertInto: any[] = isUrlData ? result.data : result.src;
+									if (isUrlData || isHttpUrl(currentURL)) {
+										insertInto.push({
+											type: isUrlData ? 'data' : 'src',
+											src: isUrlData ? currentURL : CheckAbsolutePath(currentURL),
 											alt: '',
-											width: 0,
-											height: 0,
-										});
-									} else if (isHttpUrl(currentURL)) {
-										result.src.push({
-											type: 'src',
-											src: CheckAbsolutePath(currentURL),
-											alt: '',
-											width: 0,
-											height: 0,
+											width: null,
+											height: null,
 										});
 									}
 								}
 								return result;
 							}
 
-							async function ProcessElement(el: HTMLElement | Document, result: StaticLinksResult, depth: number): Promise<StaticLinksResult> {
-								if (depth === MAX_DEPTH) return result;
-
+							// @ts-ignore
+							async function ProcessElement(el: HTMLElement | Document, result: StaticLinksResult, isInner: boolean): Promise<StaticLinksResult> {
 								const CollectFromCSSBackground = async () => {
 									const styleSheets = el.nodeType === el.DOCUMENT_NODE ? (el as Document).styleSheets : (el as Element).ownerDocument.styleSheets;
 									if (styleSheets.length === 0) return;
 									for (let i = 0; i < styleSheets.length; i++) {
 										try {
-											(styleSheets[i] as any).crossorigin = 'anonymous';
 											const rules = styleSheets[i].cssRules as unknown as CSSStyleRule[];
 											for (let i = 0; i < rules.length; i++) {
 												ProcessCssStyles(rules[i], result);
 											}
 										} catch {
-											const s = styleSheets[i];
-											if (s.href) {
-												const text = await (await fetch(s.href)).text();
-												ProcessCssStyles(text, result);
-											}
+											const sHref = styleSheets[i].href;
+											if (!sHref) continue;
+											const fetchResult = await fetch(sHref);
+											if (!fetchResult.ok) continue;
+											const text = await (await fetch(sHref)).text();
+											ProcessCssStyles(text, result);
 										}
 									}
 								};
@@ -124,21 +131,16 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 										if (!ValidateExtension(el.src)) continue;
 
 										imagesFilesSrc.push(el.src);
-										if (el.src.startsWith('data:')) {
-											result.data.push({
-												type: 'data',
-												src: el.src,
-												alt: '',
-												width: 0,
-												height: 0,
-											});
-										} else {
-											result.src.push({
-												type: 'src',
-												src: CheckAbsolutePath(el.src),
-												alt: el.alt,
-												width: el.naturalWidth,
-												height: el.naturalHeight,
+
+										const isUrlData = el.src.startsWith('data:');
+										const insertInto: any[] = isUrlData ? result.data : result.src;
+										if (isUrlData || isHttpUrl(el.src)) {
+											insertInto.push({
+												type: isUrlData ? 'data' : 'src',
+												src: isUrlData ? el.src : CheckAbsolutePath(el.src),
+												alt: isUrlData ? '' : el.alt,
+												width: el.naturalWidth ?? el.width ?? null,
+												height: el.naturalHeight ?? el.height ?? null,
 											});
 										}
 									}
@@ -153,12 +155,13 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 										if (imagesFilesSrc.includes(dataURL)) continue;
 										imagesFilesSrc.push(dataURL);
 
+										const rect = svgs[i].getBoundingClientRect();
 										result.data.push({
 											type: 'data',
 											src: CheckAbsolutePath(dataURL),
 											alt: '',
-											width: 0,
-											height: 0,
+											width: rect.width,
+											height: rect.height,
 										});
 									}
 								};
@@ -184,7 +187,20 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 											.filter((e) => !!e.shadowRoot)
 											.flatMap((e) => [e.shadowRoot, ...findShadowRoots(e.shadowRoot as any)]);
 									}
-									findShadowRoots(el as any).forEach((root: any) => ProcessElement(root, result, depth + 1));
+									findShadowRoots(el as any).forEach((root: any) => ProcessElement(root, result, true));
+								};
+
+								const ProcessIFrames = async () => {
+									const iframes = el.querySelectorAll('iframe');
+									for (let i = 0; i < iframes.length; i++) {
+										const isSameDomain = !iframes[i].src ? true : new URL(iframes[i].src).host === windowDomain;
+										if (isSameDomain) {
+											const doc = iframes[i]?.contentDocument ?? iframes[i]?.contentWindow?.document;
+											if (doc) await ProcessElement(doc, result, true);
+										} else {
+											result.iframesSrc.push(iframes[i].src);
+										}
+									}
 								};
 
 								await CollectFromCSSBackground();
@@ -192,23 +208,28 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 								CollectFromSVGS();
 								CollectFromInlineStyle();
 								CollectFromStyleTags();
-
-								ProcessOpenShadowRoots();
+								if (!isInner) {
+									await ProcessIFrames();
+									ProcessOpenShadowRoots();
+								}
 
 								return result;
 							}
 
-							await ProcessElement(document, result, 1);
-
+							await ProcessElement(document, result, false);
 							result.count = result.data.length + result.src.length;
 							return result;
 						};
 
-						return CollectAllStaticLinks(document);
+						return CollectAllStaticLinks(undefined, document, false);
 					},
 				})
-				.then((data) => {
-					setStaticLinks(data[0].result);
+				.then(async (data) => {
+					const result = data[0].result;
+					for (let i = 0; i < result.iframesSrc.length; i++) {
+						await CollectAllStaticLinks(result, result.iframesSrc[i], true);
+					}
+					setStaticLinks(FilterStaticLinks(result));
 				});
 		}
 	});

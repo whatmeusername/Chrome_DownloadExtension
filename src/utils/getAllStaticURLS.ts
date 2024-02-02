@@ -17,7 +17,7 @@ const GetFiltersDataFromResult = (results: StaticData[]) => {
 			extensionsObject[extension] = extensionsObject[extension] ? extensionsObject[extension] + 1 : 1;
 		}
 
-		if (width === 0 && height === 0) continue;
+		if (width === null || height === null || width === 0 || height === 0) continue;
 
 		if (sizeResults.height.min === null || sizeResults.height.min > height) sizeResults.height.min = height;
 		if (sizeResults.height.max === null || sizeResults.height.max < height) sizeResults.height.max = height;
@@ -28,17 +28,17 @@ const GetFiltersDataFromResult = (results: StaticData[]) => {
 	return { layoutResult, extensionsObject, sizeResults };
 };
 
-const GetFetchPromise = (res: Response): Promise<{ blob: Blob; extension: string | null }> => {
+const GetFetchPromise = (res: Response): Promise<{ blob: Blob; extension: string | null; reqURL: string }> => {
 	return new Promise(async (resolve) => {
 		const blob = await res.blob();
 		const extension = res.headers
 			.get('content-type')
 			?.split(/[\/\+]/)[1]
 			.trim();
-
 		resolve({
 			blob: blob,
 			extension: extension?.trim()?.toLowerCase() ?? null,
+			reqURL: res.url,
 		});
 	});
 };
@@ -51,15 +51,16 @@ const GetImageType = (extension: string | undefined | null): StaticExtensionType
 	return extension === StaticExtensionTypeEnum.SVG ? StaticExtensionTypeEnum.SVG : StaticExtensionTypeEnum.IMAGE;
 };
 
+const getImageLayout = (width: number | null, height: number | null): StaticImageLayout => {
+	if (width === null || height === null) return StaticImageLayout.ALL;
+	else if (width === height) return StaticImageLayout.SQUARE;
+	else if (width > height) return StaticImageLayout.WIDE;
+	else if (width < height) return StaticImageLayout.TALL;
+	return StaticImageLayout.ALL;
+};
+
 async function getAllStaticURLS(staticLinks: StaticLinksResult): Promise<GetAllStaticResponse> {
 	const promiseQuery = [];
-
-	const getImageLayout = (width: number, height: number): StaticImageLayout => {
-		if (width === height) return StaticImageLayout.SQUARE;
-		else if (width > height) return StaticImageLayout.WIDE;
-		else if (width < height) return StaticImageLayout.TALL;
-		return StaticImageLayout.ALL;
-	};
 
 	for (let i = 0; i < staticLinks.src.length; i++) {
 		const image = staticLinks.src[i];
@@ -67,7 +68,7 @@ async function getAllStaticURLS(staticLinks: StaticLinksResult): Promise<GetAllS
 		promiseQuery.push(
 			fetch(image.src)
 				.then((res) => {
-					return GetFetchPromise(res);
+					return res.ok ? GetFetchPromise(res) : Promise.reject();
 				})
 				.then((result) => {
 					const pathsSplit = image.src.split('/');
@@ -87,7 +88,8 @@ async function getAllStaticURLS(staticLinks: StaticLinksResult): Promise<GetAllS
 						size: result.blob.size,
 						layout: getImageLayout(image.width, image.height),
 					};
-				}),
+				})
+				.catch(() => {}),
 		);
 	}
 
@@ -96,7 +98,7 @@ async function getAllStaticURLS(staticLinks: StaticLinksResult): Promise<GetAllS
 		promiseQuery.push(
 			fetch(image.src)
 				.then((res) => {
-					return GetFetchPromise(res);
+					return res.ok ? GetFetchPromise(res) : Promise.reject();
 				})
 				.then((result) => {
 					if (!ValidateExtension(result.extension)) return;
@@ -114,7 +116,8 @@ async function getAllStaticURLS(staticLinks: StaticLinksResult): Promise<GetAllS
 						size: result.blob.size,
 						layout: getImageLayout(0, 0),
 					};
-				}),
+				})
+				.catch(() => {}),
 		);
 	}
 
