@@ -6,6 +6,9 @@
 	outline: none;
 	opacity: 1;
 	transition: opacity 0.15s ease-out;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
 
 	&.static__data__select__all__button__disabled {
 		cursor: initial;
@@ -19,12 +22,19 @@
 		}
 	}
 
+	.static__data__select__all__button__icon {
+		width: 20px;
+		height: 20px;
+		font-size: var(--fontM);
+		fill: var(--white-color);
+	}
+
 	.static__data__select__all__button__label {
 		letter-spacing: 0.5px;
 		font-family: sans-serif;
 		padding: 5px 8px;
 		color: var(--white-color);
-		font-size: var(--fontL);
+		font-size: var(--fontM);
 		margin: 0;
 	}
 }

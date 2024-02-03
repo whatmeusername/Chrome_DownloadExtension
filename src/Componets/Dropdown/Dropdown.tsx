@@ -2,7 +2,17 @@ import useToggle from '../../hooks/useToggle';
 import './Dropdown.scss';
 import { ReactElement, useEffect, useRef } from 'react';
 
-function Dropdown({ children, header, disabled }: { children?: ReactElement | ReactElement[] | null; header: string; disabled?: boolean }) {
+function Dropdown({
+	children,
+	header,
+	disabled,
+	icon,
+}: {
+	children?: ReactElement | ReactElement[] | null;
+	header: string;
+	disabled?: boolean;
+	icon?: ReactElement;
+}) {
 	const [toggled, setToggle] = useToggle();
 	const modalContentRef = useRef<HTMLDivElement>(null!);
 
@@ -22,6 +32,7 @@ function Dropdown({ children, header, disabled }: { children?: ReactElement | Re
 	return (
 		<div className={`modal__wrapper ${disabled ? 'modal__wrapper__disabled' : 'modal__wrapper__enabled'}`} ref={modalContentRef}>
 			<button className="modal__toggle__button" onClick={disabled ? undefined : () => setToggle()}>
+				{icon}
 				<p className="modal__label">{header}</p>
 			</button>
 			<div className={`modal__content ${toggled ? 'modal__content__active' : ''}`}>{children}</div>

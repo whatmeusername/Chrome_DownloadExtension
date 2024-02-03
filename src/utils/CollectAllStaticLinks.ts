@@ -1,70 +1,88 @@
-import { StaticLinksResult, StaticLinksData, StaticLinksSrc } from '../interface';
+import { StaticLinksResult, StaticLinkData } from '../interface';
 
 const FilterStaticLinks = (links: StaticLinksResult): StaticLinksResult => {
-	const fn = (d: StaticLinksData | StaticLinksSrc): boolean => {
+	const fn = (d: StaticLinkData): boolean => {
 		if (d.width === null || d.height === null) return true;
 		return d.width >= 10 || d.height >= 10;
 	};
 
 	links.data = links.data.filter(fn);
-	links.src = links.src.filter(fn);
+	links.count = links.data.length;
 	return links;
 };
 
 const CollectAllStaticLinks = async (
 	result: StaticLinksResult | undefined,
 	document: Document | null | undefined | string,
-	isIFrame: boolean,
+	fetchLike?: 'iframe' | 'css',
 ): Promise<StaticLinksResult> => {
-	result = result ?? { data: [], src: [], count: 0, iframesSrc: [] };
-
-	if (typeof document === 'string' && isIFrame) {
-		try {
-			const htmlText = await (await fetch(document)).text();
-			document = new DOMParser().parseFromString(htmlText, 'text/html');
-		} catch {
-			return result;
-		}
-	} else if (!document) return result;
-	else document = document as Document;
-
 	const windowDomain = window.location.host;
 	const protocol = window?.location?.protocol ?? '';
 	const imagesFilesSrc: string[] = [];
 	const cssURLRegex = /(?<=url\()['"]?([^")]+)/g;
 	const ALLOWED_IMAGE_EXTENSION = ['jpeg', 'jpg', 'webp', 'png', 'gif', 'svg', 'bmp', 'ico', 'tiff'];
+	result = result ?? { data: [], count: 0, iFramesOrigins: [], CssOrgins: [] };
 
-	const CheckAbsolutePath = (url: string): string => {
-		if (url.startsWith('//')) url = protocol + url;
-		return url;
-	};
-
-	const isHttpUrl = (url: string): boolean => {
+	function isHttpUrl(url: string): boolean {
 		return url.startsWith('//') || url.startsWith('http') || url.startsWith('https');
-	};
+	}
 
-	const IsNotValidImageData = (el: HTMLImageElement): boolean => {
+	function IsNotValidImageData(el: HTMLImageElement): boolean {
 		if (el.nodeName === 'img') {
 			const isLessThatMin = el.naturalWidth < 10 || el.naturalHeight < 10;
 			const isZeroSize = el.naturalWidth === 0 || el.naturalHeight === 0;
 			return isLessThatMin || isZeroSize || imagesFilesSrc.includes(el.src);
 		}
 		return imagesFilesSrc.includes(el.src);
-	};
+	}
 
-	const ValidateExtension = (src: string): boolean => {
+	function ValidateExtension(src: string): boolean {
 		const extension = src
 			.split(/\.([^\./\?\#]+)($|\?|\#)/g)?.[1]
 			?.trim()
 			?.toLowerCase();
+
 		if (extension) {
 			return ALLOWED_IMAGE_EXTENSION.includes(extension);
 		}
 		return true;
-	};
+	}
 
-	function ProcessCssStyles(source: HTMLElement | CSSRule | string, result: StaticLinksResult): StaticLinksResult {
+	//@ts-ignore
+	function CheckPath(url: string, prefix?: string): string {
+		if (prefix && (url.startsWith('/') || url.startsWith('..') || !isHttpUrl(url))) {
+			return prefix + url;
+		} else if (url.startsWith('//')) {
+			return protocol + url;
+		}
+		return url;
+	}
+
+	function ClearUrl(url: string): string {
+		if (url.startsWith('"') || url.startsWith("'")) url = url.slice(1);
+		if (url.endsWith('"') || url.endsWith("'")) url = url.slice(0, -1);
+		return url;
+	}
+
+	if (typeof document === 'string' && fetchLike === 'iframe') {
+		try {
+			const htmlText = await (await fetch(document)).text();
+			document = new DOMParser().parseFromString(htmlText, 'text/html');
+		} catch {
+			return result;
+		}
+	} else if (typeof document === 'string' && fetchLike === 'css') {
+		const fetchResult = await fetch(document);
+		if (!fetchResult.ok) return result;
+		const text = await fetchResult.text();
+		const href = new URL(document);
+		return ProcessCssStyles(text, result, `${href.origin}/`);
+	} else if (!document) return result;
+	else document = document as Document;
+
+	function ProcessCssStyles(source: HTMLElement | CSSRule | string, result: StaticLinksResult, prefix?: string): StaticLinksResult {
 		let cssRuleImages: string[] = [];
+
 		if ((source as HTMLElement).tagName) {
 			const style = (source as HTMLElement).style;
 			const backgroundImageMatch: string[] = style.background.match(cssURLRegex) ?? [];
@@ -80,31 +98,30 @@ const CollectAllStaticLinks = async (
 			cssRuleImages = source.match(cssURLRegex) ?? [];
 		}
 
-		if (cssRuleImages.length === 0) return result;
-		for (let j = 0; j < cssRuleImages.length; j++) {
-			let currentURL = cssRuleImages[j];
+		for (let i = 0; i < cssRuleImages.length; i++) {
+			let currentURL = ClearUrl(cssRuleImages[i]);
 
-			if (currentURL.startsWith('"')) currentURL = currentURL.slice(1);
-			if (imagesFilesSrc.includes(currentURL)) continue;
-			if (!ValidateExtension(currentURL)) continue;
-			imagesFilesSrc.push(currentURL);
+			if (imagesFilesSrc.includes(currentURL) || !ValidateExtension(currentURL)) continue;
 
 			const isUrlData = currentURL.startsWith('data:');
-			const insertInto: any[] = isUrlData ? result.data : result.src;
-			if (isUrlData || isHttpUrl(currentURL)) {
-				insertInto.push({
+			const url = isUrlData ? currentURL : CheckPath(currentURL, prefix);
+
+			imagesFilesSrc.push(currentURL);
+
+			if (isUrlData || isHttpUrl(url)) {
+				result.data.push({
 					type: isUrlData ? 'data' : 'src',
-					src: isUrlData ? currentURL : CheckAbsolutePath(currentURL),
+					src: url,
 					alt: '',
 					width: null,
 					height: null,
 				});
 			}
 		}
+
 		return result;
 	}
 
-	// @ts-ignore
 	async function ProcessElement(el: HTMLElement | Document, result: StaticLinksResult, isInner: boolean): Promise<StaticLinksResult> {
 		const CollectFromCSSBackground = async () => {
 			const styleSheets = el.nodeType === el.DOCUMENT_NODE ? (el as Document).styleSheets : (el as Element).ownerDocument.styleSheets;
@@ -117,11 +134,14 @@ const CollectAllStaticLinks = async (
 					}
 				} catch {
 					const sHref = styleSheets[i].href;
-					if (!sHref) continue;
-					const fetchResult = await fetch(sHref);
-					if (!fetchResult.ok) continue;
-					const text = await (await fetch(sHref)).text();
-					ProcessCssStyles(text, result);
+					if (sHref && new URL(sHref).host === windowDomain) {
+						const fetchResult = await fetch(sHref);
+						if (!fetchResult.ok) continue;
+						const text = await fetchResult.text();
+						ProcessCssStyles(text, result);
+					} else if (sHref) {
+						result.CssOrgins.push(sHref);
+					}
 				}
 			}
 		};
@@ -136,11 +156,10 @@ const CollectAllStaticLinks = async (
 				imagesFilesSrc.push(el.src);
 
 				const isUrlData = el.src.startsWith('data:');
-				const insertInto: any[] = isUrlData ? result.data : result.src;
 				if (isUrlData || isHttpUrl(el.src)) {
-					insertInto.push({
+					result.data.push({
 						type: isUrlData ? 'data' : 'src',
-						src: isUrlData ? el.src : CheckAbsolutePath(el.src),
+						src: isUrlData ? el.src : CheckPath(el.src),
 						alt: isUrlData ? '' : el.alt,
 						width: el.naturalWidth ?? el.width ?? null,
 						height: el.naturalHeight ?? el.height ?? null,
@@ -161,7 +180,7 @@ const CollectAllStaticLinks = async (
 				const rect = svgs[i].getBoundingClientRect();
 				result.data.push({
 					type: 'data',
-					src: CheckAbsolutePath(dataURL),
+					src: CheckPath(dataURL),
 					alt: '',
 					width: rect.width,
 					height: rect.height,
@@ -201,7 +220,7 @@ const CollectAllStaticLinks = async (
 					const doc = iframes[i]?.contentDocument ?? iframes[i]?.contentWindow?.document;
 					if (doc) await ProcessElement(doc, result, true);
 				} else {
-					result.iframesSrc.push(iframes[i].src);
+					result.iFramesOrigins.push(iframes[i].src);
 				}
 			}
 		};
@@ -211,6 +230,7 @@ const CollectAllStaticLinks = async (
 		CollectFromSVGS();
 		CollectFromInlineStyle();
 		CollectFromStyleTags();
+
 		if (!isInner) {
 			await ProcessIFrames();
 			ProcessOpenShadowRoots();
@@ -220,7 +240,7 @@ const CollectAllStaticLinks = async (
 	}
 
 	await ProcessElement(document, result, false);
-	result.count = result.data.length + result.src.length;
+	result.count = result.data.length;
 	return result;
 };
 

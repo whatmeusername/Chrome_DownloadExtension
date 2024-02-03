@@ -1,5 +1,5 @@
 import { ALLOWED_IMAGE_EXTENSION } from '../consts/allowed_extensions';
-import { StaticData, StaticImageLayout, StaticExtensionTypeEnum, StaticLinksResult, GetAllStaticResponse } from '../interface';
+import { StaticData, StaticImageLayout, StaticExtensionTypeEnum, StaticLinksResult, GetAllStaticResponse, StaticLinkData } from '../interface';
 
 const GetFiltersDataFromResult = (results: StaticData[]) => {
 	const layoutResult: { [K: string]: number } = {};
@@ -58,33 +58,46 @@ const getImageLayout = (width: number | null, height: number | null): StaticImag
 	else if (width < height) return StaticImageLayout.TALL;
 	return StaticImageLayout.ALL;
 };
+const getImageName = (data: StaticLinkData): string => {
+	if (data.type === 'data') return '';
+	const pathsSplit = data.src.split('/');
+	const name = pathsSplit[pathsSplit.length - 1].split('.');
+	return name[0] ?? '';
+};
+
+const getImageSizeMeta = async (data: StaticLinkData): Promise<{ width: number; height: number }> => {
+	if (data.width !== null && data.height !== null) return { width: data.width, height: data.height };
+	const img = new Image();
+	img.src = data.src;
+	await img.decode();
+	return { width: img.width, height: img.height };
+};
 
 async function getAllStaticURLS(staticLinks: StaticLinksResult): Promise<GetAllStaticResponse> {
 	const promiseQuery = [];
 
-	for (let i = 0; i < staticLinks.src.length; i++) {
-		const image = staticLinks.src[i];
+	for (let i = 0; i < staticLinks.data.length; i++) {
+		const image = staticLinks.data[i];
 
 		promiseQuery.push(
 			fetch(image.src)
 				.then((res) => {
 					return res.ok ? GetFetchPromise(res) : Promise.reject();
 				})
-				.then((result) => {
-					const pathsSplit = image.src.split('/');
-					const extensionNameSplit = pathsSplit[pathsSplit.length - 1].split('.');
-
+				.then(async (result) => {
 					if (!ValidateExtension(result.extension)) return;
+
+					const { width, height } = await getImageSizeMeta(image);
+
 					return {
-						blob: result.blob,
 						type: image.type,
 						src: image.src,
-						name: extensionNameSplit[0],
+						name: getImageName(image),
 						alt: image.alt ?? null,
 						extension: result.extension,
 						imageType: GetImageType(result.extension),
-						width: image.width,
-						height: image.height,
+						width: width,
+						height: height,
 						size: result.blob.size,
 						layout: getImageLayout(image.width, image.height),
 					};
@@ -93,37 +106,8 @@ async function getAllStaticURLS(staticLinks: StaticLinksResult): Promise<GetAllS
 		);
 	}
 
-	for (let i = 0; i < staticLinks.data.length; i++) {
-		const image = staticLinks.data[i];
-		promiseQuery.push(
-			fetch(image.src)
-				.then((res) => {
-					return res.ok ? GetFetchPromise(res) : Promise.reject();
-				})
-				.then((result) => {
-					if (!ValidateExtension(result.extension)) return;
-
-					return {
-						blob: result.blob,
-						type: image.type,
-						src: image.src,
-						name: '',
-						alt: image.alt ?? null,
-						extension: result.extension,
-						imageType: GetImageType(result.extension),
-						width: 0,
-						height: 0,
-						size: result.blob.size,
-						layout: getImageLayout(0, 0),
-					};
-				})
-				.catch(() => {}),
-		);
-	}
-
-	const results = (await Promise.all(promiseQuery)).filter((r) => r !== undefined) as StaticData[];
+	const results = (await Promise.all(promiseQuery)).filter((r) => r) as StaticData[];
 	const { layoutResult, extensionsObject, sizeResults } = GetFiltersDataFromResult(results);
-
 	return { data: results, extensions: extensionsObject, layout: layoutResult, size: sizeResults };
 }
 

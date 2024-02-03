@@ -11,22 +11,14 @@ enum StaticImageLayout {
 }
 
 interface StaticLinksResult {
-	src: StaticLinksSrc[];
-	data: StaticLinksData[];
-	iframesSrc: string[];
+	data: StaticLinkData[];
+	iFramesOrigins: string[];
+	CssOrgins: string[];
 	count: number;
 }
 
-type StaticLinksSrc = {
-	type: 'src';
-	src: string;
-	alt: string;
-	width: number | null;
-	height: number | null;
-};
-
-type StaticLinksData = {
-	type: 'data';
+type StaticLinkData = {
+	type: 'src' | 'data';
 	src: string;
 	alt: string;
 	width: number | null;
@@ -34,7 +26,6 @@ type StaticLinksData = {
 };
 
 interface StaticData {
-	blob: Blob;
 	type: 'data' | 'src';
 	src: string;
 	name: string;
@@ -70,5 +61,5 @@ interface GetAllStaticResponse {
 	size: { height: { min: number; max: number }; width: { min: number; max: number } };
 }
 
-export type { StaticData, StaticLinksResult, StaticLinksSrc, StaticLinksData, StaticDataSizeFilter, FilterContextType, GetAllStaticResponse };
+export type { StaticData, StaticLinksResult, StaticLinkData, StaticDataSizeFilter, FilterContextType, GetAllStaticResponse };
 export { StaticExtensionTypeEnum, StaticImageLayout };

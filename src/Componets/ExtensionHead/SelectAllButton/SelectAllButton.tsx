@@ -1,6 +1,7 @@
 import { ReactElement } from 'react';
 import { StaticData } from '../../../interface';
 import './SelectAllButton.scss';
+import { SelectIcon } from '../../icons';
 
 function SelectAllButton({
 	StaticDataArray,
@@ -25,8 +26,9 @@ function SelectAllButton({
 					? 'static__data__select__all__button__disabled'
 					: 'static__data__select__all__button__enabled'
 			} `}
-			onClick={() => (StaticDataArray && StaticDataArray.length > 0 ? OnClick : undefined)}
+			onClick={StaticDataArray && StaticDataArray.length > 0 ? OnClick : undefined}
 		>
+			<SelectIcon className="static__data__select__all__button__icon" />
 			<p className="static__data__select__all__button__label">{selectedItems.length > 0 ? 'Unselect all' : 'Select all'}</p>
 		</button>
 	);

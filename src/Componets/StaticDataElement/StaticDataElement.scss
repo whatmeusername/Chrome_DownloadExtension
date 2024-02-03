@@ -32,17 +32,14 @@
 		width: 320px;
 		height: 420px;
 		border-radius: 8px;
-		box-shadow: 0 0 16px var(--box-shadow-color);
+		box-shadow: 0 0 12px var(--box-shadow-color);
 		padding: 0;
 		border: 2.5px solid transparent;
-		transition: background 0.25s ease, border 0.25s ease;
+		transition: box-shadow 0.25s ease, border 0.25s ease;
 
 		&.static__data__item__active {
-			background: var(--gray-color);
-			border: 2.5px solid var(--grey-color);
-			.thin__line__element {
-				background: var(--white-color);
-			}
+			border: 2.5px solid rgb(150, 220, 130);
+			box-shadow: 0 0 12px rgb(150, 220, 130, 0.2);
 		}
 
 		.static__data__item__content {
@@ -95,7 +92,7 @@
 					}
 				}
 				.static__data__item__img {
-					border-radius: 4px;
+					border-radius: 2px;
 					max-width: 100%;
 					max-height: 100%;
 				}
@@ -133,21 +130,36 @@
 					flex-direction: row;
 					align-items: center;
 					justify-content: space-between;
-					.static__data__item__names__label {
-						padding: 5px 10px;
+					.static__data__item__names__label__item {
+						padding: 5px;
+
+						width: 45%;
+						background-color: transparent;
+						border: 2px solid var(--primary-color);
 						border-radius: 8px;
-						margin: 0;
-						width: 40%;
-						background: var(--grey-color);
-						color: var(--white-color);
-						font-family: sans-serif;
+
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+						gap: 5px;
+
 						font-weight: 500;
+						font-family: sans-serif;
 						letter-spacing: 0.5px;
 						font-size: var(--fontS);
+						color: var(--primary-color);
+						.static__data__item__names__prefix {
+							font-weight: 800;
+							margin: 0;
+						}
+						.static__data__item__names__label {
+							font-weight: 500;
+							margin: 0;
 
-						white-space: nowrap;
-						overflow: hidden;
-						text-overflow: ellipsis;
+							white-space: nowrap;
+							overflow: hidden;
+							text-overflow: ellipsis;
+						}
 					}
 				}
 				.static__data__item__buttons {
@@ -155,18 +167,37 @@
 					.static__data__item__button__download {
 						width: 100%;
 						border-radius: 8px;
-						color: var(--white-color);
-						font-size: var(--fontX);
-						font-weight: 500;
 						background: var(--primary-color);
 						border: none;
 						outline: none;
-						padding: 8px 0;
+						padding: 3px 0;
 						cursor: pointer;
-						letter-spacing: 1px;
-						font-family: sans-serif;
+
 						opacity: 1;
 						transition: opacity 0.15s ease-out;
+
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+						justify-content: center;
+						gap: 5px;
+
+						.static__data__item__button__icon {
+							width: 30px;
+							height: 30px;
+							fill: var(--white-color);
+							margin: 0;
+						}
+
+						.static__data__item__button__label {
+							margin: 0;
+							color: var(--white-color);
+							font-size: var(--fontX);
+							font-weight: 500;
+							letter-spacing: 1px;
+							font-family: sans-serif;
+						}
+
 						&:hover {
 							opacity: 0.9;
 						}

@@ -4,6 +4,7 @@ import Dropdown from '../Dropdown/Dropdown';
 import { GetAllStaticResponse } from '../../utils/getAllStaticURLS';
 import { StaticDataSizeFilter } from '../../interface';
 import { ThinLineElement } from '../shared/ThinLineElement';
+import { SizeIcon } from '../icons';
 
 const isDisableSizeFilter = (sizeData: GetAllStaticResponse['size']): boolean => {
 	return sizeData.height.max === null && sizeData.height.min === null && sizeData.width.min === null && sizeData.width.max === null;
@@ -53,7 +54,7 @@ function SizeFilter({
 	const isDisabled = sizeData === undefined || isDisableSizeFilter(sizeData);
 	return (
 		<div className="static__data__header__filter">
-			<Dropdown header="Size" disabled={isDisabled}>
+			<Dropdown header="Size" disabled={isDisabled} icon={<SizeIcon className="modal__toggle__button__icon" />}>
 				{!isDisabled ? (
 					<form className="static__data__header__filter__content static__data__header__filter__allowed__size" ref={formRef}>
 						<div className="size__filter__wrapper size__filter__width">

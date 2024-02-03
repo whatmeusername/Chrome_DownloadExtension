@@ -2,7 +2,7 @@ import { ReactElement } from 'react';
 import { StaticData } from '../../interface';
 import { ChromeDownloadFile } from '../../utils/ChromeDownloadFile';
 import './StaticDataElement.scss';
-import { LinkIcon, NoImageIcon } from '../icons';
+import { DownloadIcon, LinkIcon, NoImageIcon } from '../icons';
 import { ThinLineElement } from '../shared/ThinLineElement';
 import { CalculateFileSize } from '../../utils/CalculateFileSize';
 
@@ -83,16 +83,19 @@ function StaticDataItemElement({
 						<p className="static__data__item__label__href__text">{StaticData.src}</p>
 					</a>
 					<div className="static__data__item__names">
-						<p className="static__data__item__names__label" title={StaticData?.name ?? 'Name is empty'}>
-							Name: {StaticData.name === '' ? 'None' : StaticData.name}
-						</p>
-						<p className="static__data__item__names__label" title={StaticData?.alt ?? 'Alt is empty'}>
-							Alt: {StaticData.alt === '' ? 'None' : StaticData.alt}
-						</p>
+						<div className="static__data__item__names__label__item" title={StaticData?.name ?? 'Name is empty'}>
+							<p className="static__data__item__names__prefix">Name:</p>
+							<p className="static__data__item__names__label">{StaticData.name === '' ? 'None' : StaticData.name}</p>
+						</div>
+						<div className="static__data__item__names__label__item" title={StaticData?.alt ?? 'Alt is empty'}>
+							<p className="static__data__item__names__prefix">Alt:</p>
+							<p className="static__data__item__names__label">{StaticData.alt === '' ? 'None' : StaticData.alt}</p>
+						</div>
 					</div>
 					<div className="static__data__item__buttons">
 						<button className="static__data__item__button static__data__item__button__download" onClick={() => ChromeDownloadFile(StaticData)}>
-							Download file
+							<DownloadIcon className="static__data__item__button__icon" />
+							<p className="static__data__item__button__label">Download file</p>
 						</button>
 					</div>
 				</div>

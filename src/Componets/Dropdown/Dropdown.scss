@@ -5,6 +5,7 @@
 		flex-direction: row;
 		justify-content: space-between;
 		align-items: center;
+		gap: 5px;
 		background-color: transparent;
 		border: 2px solid var(--gray-color);
 		padding: 5px 20px;
@@ -12,6 +13,12 @@
 		background-color: var(--white-color);
 		border-radius: 8px;
 		transition: box-shadow 0.3s ease;
+
+		.modal__toggle__button__icon {
+			width: 20px;
+			height: 20px;
+			color: var(--primary-color);
+		}
 
 		.modal__label {
 			font-family: sans-serif;

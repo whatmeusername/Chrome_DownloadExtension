@@ -1,7 +1,7 @@
 import { ReactElement } from 'react';
 import './ExtensionFilter.scss';
 import Dropdown from '../Dropdown/Dropdown';
-import { CheckmarkIcon } from '../icons';
+import { CheckmarkIcon, ExtensionIcon } from '../icons';
 
 function ExtensionFilter({
 	selectedExtension,
@@ -29,7 +29,7 @@ function ExtensionFilter({
 	const extensionCountPairs = extensionData ? Object.entries(extensionData) : [];
 	return (
 		<div className="static__data__header__filter">
-			<Dropdown header="Extension" disabled={extensionData === undefined}>
+			<Dropdown header="Extension" disabled={extensionData === undefined} icon={<ExtensionIcon className="modal__toggle__button__icon" />}>
 				<div className="static__data__header__filter__content static__data__header__filter__allowed__extensions">
 					<button
 						className={`static__data__header__filter__item static__data__header__filter__item__extension ${

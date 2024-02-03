@@ -1,7 +1,7 @@
 import { ReactElement } from 'react';
 import './LayoutFilter.scss';
 import Dropdown from '../Dropdown/Dropdown';
-import { CheckmarkIcon } from '../icons';
+import { CheckmarkIcon, LayoutIcon } from '../icons';
 
 function LayoutFilter({
 	selectedLayout,
@@ -30,7 +30,7 @@ function LayoutFilter({
 
 	return (
 		<div className="static__data__header__filter">
-			<Dropdown header="Layout" disabled={layoutData === undefined}>
+			<Dropdown header="Layout" disabled={layoutData === undefined} icon={<LayoutIcon className="modal__toggle__button__icon" />}>
 				<div className="static__data__header__filter__content static__data__header__filter__allowed__layout">
 					<button
 						className={`static__data__header__filter__item static__data__header__filter__item__layout ${

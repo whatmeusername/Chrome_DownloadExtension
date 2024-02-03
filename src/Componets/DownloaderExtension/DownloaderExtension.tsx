@@ -73,10 +73,8 @@ function DownloaderExtension({ staticLinks }: { staticLinks: StaticLinksResult }
 	useEffect(() => {
 		if (!staticLinks) return;
 		getAllStaticURLS(staticLinks).then((result) => {
-			if (result.data.length > 0) {
-				StaticResponseData.current = result;
-				setStaticDataResult(result.data);
-			}
+			StaticResponseData.current = result;
+			setStaticDataResult(result.data);
 		});
 	}, [staticLinks]);
 
