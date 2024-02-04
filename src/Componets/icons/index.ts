@@ -15,6 +15,7 @@ import JsonIcon from '../../icons/json.svg?react';
 import SizeIcon from '../../icons/size.svg?react';
 import ExtensionIcon from '../../icons/extension.svg?react';
 import LayoutIcon from '../../icons/layout.svg?react';
+import SortIcon from '../../icons/sort.svg?react';
 
 export {
 	CheckmarkIcon,
@@ -32,4 +33,5 @@ export {
 	SizeIcon,
 	ExtensionIcon,
 	LayoutIcon,
+	SortIcon,
 };

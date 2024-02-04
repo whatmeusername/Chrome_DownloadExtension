@@ -1,38 +1,11 @@
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import './DownloaderExtension.scss';
-import { StaticData, StaticDataSizeFilter, StaticLinksResult } from '../../interface';
+import { SearchData, SortOption, StaticData, StaticDataSizeFilter, StaticLinksResult } from '../../interface';
 import { GetAllStaticResponse, getAllStaticURLS } from '../../utils/getAllStaticURLS';
 import { StaticDataElement } from '../StaticDataElement/StaticDataElement';
 import { LoadingElement } from '../LoadingElement/LoadingElement';
 import { FilterContextElement } from '../FilterContext/FilterContext';
 import { ExtensionHead } from '../ExtensionHead/ExtensionHead';
-
-//@ts-ignore
-function StaticDataCanvasItem({ StaticData }: { StaticData: StaticData }): ReactElement {
-	const canvasRef = useRef<HTMLCanvasElement>(null!);
-	return <canvas className="static__data__canvas__item" ref={canvasRef} />;
-}
-
-//@ts-ignore
-function StaticDataCanvas({
-	StaticDataArray,
-	setIsLoaded,
-}: {
-	StaticDataArray: StaticData[];
-	setIsLoaded: React.Dispatch<React.SetStateAction<boolean>>;
-}): ReactElement {
-	useEffect(() => {
-		setIsLoaded(true);
-	}, []);
-
-	return (
-		<div className="static__data__canvas__wrapper">
-			{StaticDataArray.map((StaticData, i) => (
-				<StaticDataCanvasItem StaticData={StaticData} key={`static__data__canvas__item__${i}`} />
-			))}
-		</div>
-	);
-}
 
 function DownloaderExtension({ staticLinks }: { staticLinks: StaticLinksResult }): ReactElement {
 	const StaticResponseData = useRef<GetAllStaticResponse>(null!);
@@ -44,6 +17,8 @@ function DownloaderExtension({ staticLinks }: { staticLinks: StaticLinksResult }
 	const [StaticDataResult, setStaticDataResult] = useState<StaticData[]>(null!);
 
 	// FILTERS
+	const [sortOption, setSortOption] = useState<SortOption | null>(null);
+	const [searchData, setSearchData] = useState<SearchData>({ str: '', field: 'name' });
 	const [selectedExtension, setSelectedExtension] = useState<string[]>([]);
 	const [selectedLayout, setSelectedLayout] = useState<string[]>([]);
 	const [selectedSize, setSelectedSize] = useState<StaticDataSizeFilter>({ height: { min: null, max: null }, width: { min: null, max: null } });
@@ -51,11 +26,16 @@ function DownloaderExtension({ staticLinks }: { staticLinks: StaticLinksResult }
 	useEffect(() => {
 		if (!StaticResponseData.current) return;
 		let copy: StaticData[] = JSON.parse(JSON.stringify(StaticResponseData.current.data));
+
+		if (searchData.str.length > 0) {
+			copy = copy.filter((d) => d[searchData.field]?.includes(searchData.str));
+		}
+
 		if (selectedExtension.length > 0) {
-			copy = copy.filter((data) => selectedExtension.includes(data?.extension ?? ''));
+			copy = copy.filter((data) => selectedExtension.includes(data.extension));
 		}
 		if (selectedLayout.length > 0) {
-			copy = copy.filter((data) => selectedLayout.includes(data?.layout ?? ''));
+			copy = copy.filter((data) => selectedLayout.includes(data.layout));
 		}
 		if (selectedSize.height.min || selectedSize.height.max || selectedSize.width.min || selectedSize.width.max) {
 			const HMax = selectedSize.height.max;
@@ -67,8 +47,15 @@ function DownloaderExtension({ staticLinks }: { staticLinks: StaticLinksResult }
 				return true;
 			});
 		}
+		if (sortOption) {
+			const f = sortOption.field as keyof StaticData;
+			copy.sort((a: any, b: any) => {
+				return (sortOption.orderby === 'asc' ? a?.[f] > b?.[f] : a?.[f] < b?.[f]) ? 1 : -1;
+			});
+		}
+		setSelectedItems([]);
 		setStaticDataResult(copy);
-	}, [selectedExtension, selectedLayout, selectedSize]);
+	}, [selectedExtension, selectedLayout, selectedSize, sortOption, searchData]);
 
 	useEffect(() => {
 		if (!staticLinks) return;
@@ -81,6 +68,10 @@ function DownloaderExtension({ staticLinks }: { staticLinks: StaticLinksResult }
 	return (
 		<FilterContextElement
 			value={{
+				searchData: searchData,
+				setSearchData: setSearchData,
+				sortOption: sortOption,
+				setSortOption: setSortOption,
 				selectedExtension: selectedExtension,
 				setSelectedExtension: setSelectedExtension,
 				selectedLayout: selectedLayout,
@@ -94,7 +85,12 @@ function DownloaderExtension({ staticLinks }: { staticLinks: StaticLinksResult }
 			<div className="extension__main__wrapper">
 				<ExtensionHead StaticResponseData={StaticResponseData} StaticDataResult={StaticDataResult} />
 				{StaticResponseData.current && StaticDataResult ? (
-					<StaticDataElement StaticDataArray={StaticDataResult} selectedItems={selectedItems} setSelectedItems={setSelectedItems} />
+					<StaticDataElement
+						StaticDataArray={StaticDataResult}
+						StaticResponseData={StaticResponseData.current.data}
+						selectedItems={selectedItems}
+						setSelectedItems={setSelectedItems}
+					/>
 				) : (
 					<LoadingElement count={staticLinks?.count} />
 				)}

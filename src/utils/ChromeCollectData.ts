@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { StaticLinksResult } from '../interface';
 import { CollectAllStaticLinks, FilterStaticLinks } from './CollectAllStaticLinks';
 
@@ -20,6 +22,10 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 							const ALLOWED_IMAGE_EXTENSION = ['jpeg', 'jpg', 'webp', 'png', 'gif', 'svg', 'bmp', 'ico', 'tiff'];
 							result = result ?? { data: [], count: 0, iFramesOrigins: [], CssOrgins: [] };
 
+							function isDataUrl(url: string): boolean {
+								return url.startsWith('data:') || url.startsWith('blob:');
+							}
+
 							function isHttpUrl(url: string): boolean {
 								return url.startsWith('//') || url.startsWith('http') || url.startsWith('https');
 							}
@@ -30,10 +36,11 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 									const isZeroSize = el.naturalWidth === 0 || el.naturalHeight === 0;
 									return isLessThatMin || isZeroSize || imagesFilesSrc.includes(el.src);
 								}
-								return imagesFilesSrc.includes(el.src);
+								return imagesFilesSrc.includes(el?.src);
 							}
 
 							function ValidateExtension(src: string): boolean {
+								if (!src) return false;
 								const extension = src
 									.split(/\.([^\./\?\#]+)($|\?|\#)/g)?.[1]
 									?.trim()
@@ -45,7 +52,6 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 								return true;
 							}
 
-							//@ts-ignore
 							function CheckPath(url: string, prefix?: string): string {
 								if (prefix && (url.startsWith('/') || url.startsWith('..') || !isHttpUrl(url))) {
 									return prefix + url;
@@ -55,7 +61,7 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 								return url;
 							}
 
-							function ClearUrl(url: string): string {
+							function TrimUrl(url: string): string {
 								if (url.startsWith('"') || url.startsWith("'")) url = url.slice(1);
 								if (url.endsWith('"') || url.endsWith("'")) url = url.slice(0, -1);
 								return url;
@@ -96,11 +102,11 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 								}
 
 								for (let i = 0; i < cssRuleImages.length; i++) {
-									let currentURL = ClearUrl(cssRuleImages[i]);
+									let currentURL = TrimUrl(cssRuleImages[i]);
 
 									if (imagesFilesSrc.includes(currentURL) || !ValidateExtension(currentURL)) continue;
 
-									const isUrlData = currentURL.startsWith('data:');
+									const isUrlData = isDataUrl(currentURL);
 									const url = isUrlData ? currentURL : CheckPath(currentURL, prefix);
 
 									imagesFilesSrc.push(currentURL);
@@ -145,14 +151,16 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 
 								const CollectFromSrc = () => {
 									const elements = el.querySelectorAll('[src]');
+
 									for (let i = 0; i < elements.length; i++) {
 										const el = elements[i] as HTMLImageElement;
+
 										if (IsNotValidImageData(el as any)) continue;
 										if (!ValidateExtension(el.src)) continue;
 
 										imagesFilesSrc.push(el.src);
 
-										const isUrlData = el.src.startsWith('data:');
+										const isUrlData = isDataUrl(el.src);
 										if (isUrlData || isHttpUrl(el.src)) {
 											result.data.push({
 												type: isUrlData ? 'data' : 'src',
@@ -237,7 +245,9 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 							}
 
 							await ProcessElement(document, result, false);
+
 							result.count = result.data.length;
+
 							return result;
 						};
 

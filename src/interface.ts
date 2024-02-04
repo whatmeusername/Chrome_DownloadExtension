@@ -25,7 +25,20 @@ type StaticLinkData = {
 	height: number | null;
 };
 
+interface SearchData {
+	field: 'name' | 'alt' | 'src';
+	str: string;
+}
+
+interface SortOption {
+	id: number;
+	field: string;
+	orderby: 'desc' | 'asc';
+	alias: string;
+}
+
 interface StaticData {
+	id: number;
 	type: 'data' | 'src';
 	src: string;
 	name: string;
@@ -44,6 +57,10 @@ interface StaticDataSizeFilter {
 }
 
 interface FilterContextType {
+	searchData: SearchData;
+	setSearchData: React.Dispatch<React.SetStateAction<SearchData>>;
+	sortOption: SortOption | null;
+	setSortOption: React.Dispatch<React.SetStateAction<SortOption | null>>;
 	selectedExtension: string[];
 	setSelectedExtension: React.Dispatch<React.SetStateAction<string[]>>;
 	selectedLayout: string[];
@@ -61,5 +78,5 @@ interface GetAllStaticResponse {
 	size: { height: { min: number; max: number }; width: { min: number; max: number } };
 }
 
-export type { StaticData, StaticLinksResult, StaticLinkData, StaticDataSizeFilter, FilterContextType, GetAllStaticResponse };
+export type { StaticData, StaticLinksResult, StaticLinkData, SearchData, StaticDataSizeFilter, FilterContextType, GetAllStaticResponse, SortOption };
 export { StaticExtensionTypeEnum, StaticImageLayout };

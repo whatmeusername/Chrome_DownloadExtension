@@ -1,4 +1,4 @@
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
 import { StaticData } from '../../interface';
 import { ChromeDownloadFile } from '../../utils/ChromeDownloadFile';
 import './StaticDataElement.scss';
@@ -8,13 +8,17 @@ import { CalculateFileSize } from '../../utils/CalculateFileSize';
 
 function OpenAtNewTab({ StaticData }: { StaticData: StaticData }): ReactElement {
 	if (StaticData.type === 'data') {
-		const onClick = () => {
+		const onClick = (e: React.MouseEvent) => {
+			e.stopPropagation();
 			const cw = window.open();
 			cw?.document.write(`<img src="${StaticData.src}"/>`);
 		};
 
 		return (
-			<button onClick={onClick} className="static__data__item__img__info__item static__data__item__img__info__item__link">
+			<button
+				onClick={onClick}
+				className="static__data__item__img__info__item static__data__item__img__info__item__link static__data__item__img__info__item__click"
+			>
 				<LinkIcon className="static__data__item__img__info__item__link__icon" />
 			</button>
 		);
@@ -46,6 +50,29 @@ function DimensionElement({ StaticData }: { StaticData: StaticData }): ReactElem
 		</div>
 	);
 }
+
+const availableZooms = [1, 1.25, 1.5, 2, 2.5, 3];
+
+function ZoomElement({
+	currentZoom,
+	setCurrentZoom,
+}: {
+	currentZoom: number;
+	setCurrentZoom: React.Dispatch<React.SetStateAction<number>>;
+}): ReactElement {
+	const SetNextZoom = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setCurrentZoom(currentZoom === availableZooms.length - 1 ? 0 : currentZoom + 1);
+	};
+	return (
+		<div
+			className="static__data__item__img__info__item static__data__item__img__info__item__zoom static__data__item__img__info__item__click"
+			onClick={SetNextZoom}
+		>
+			Zoom: {availableZooms[currentZoom]}
+		</div>
+	);
+}
 function StaticDataItemElement({
 	StaticData,
 	selectedItems,
@@ -55,6 +82,7 @@ function StaticDataItemElement({
 	selectedItems: StaticData[];
 	setSelectedItems: React.Dispatch<React.SetStateAction<StaticData[]>>;
 }): ReactElement {
+	const [currentZoom, setCurrentZoom] = useState<number>(0);
 	const activeIndex = selectedItems.findIndex((i) => i.src === StaticData.src);
 
 	const SetItemActive = () => {
@@ -65,17 +93,36 @@ function StaticDataItemElement({
 		}
 	};
 
+	const OnKeyUp = (e: React.KeyboardEvent<HTMLInputElement>, key: 'name' | 'alt') => {
+		const value = (e.target as HTMLInputElement).value;
+		if (key) {
+			StaticData.name = value;
+		} else {
+			StaticData.alt = value;
+		}
+	};
+
 	return (
 		<div className={`static__data__item ${activeIndex !== -1 ? 'static__data__item__active' : ''}`}>
 			<div className="static__data__item__content">
 				<div className="static__data__item__img__wrapper" onClick={SetItemActive}>
 					<div className="static__data__item__img__info">
-						<div className="static__data__item__img__info__item static__data__item__img__info__item__extension">{StaticData.extension}</div>
-						<SizeElement fileSize={StaticData.size} />
-						<DimensionElement StaticData={StaticData} />
-						<OpenAtNewTab StaticData={StaticData} />
+						<div className="static__data__item__zoom__wrapper">
+							<ZoomElement currentZoom={currentZoom} setCurrentZoom={setCurrentZoom} />
+						</div>
+						<div className="static__data__item__img__info__main">
+							<div className="static__data__item__img__info__item static__data__item__img__info__item__extension">{StaticData.extension}</div>
+							<SizeElement fileSize={StaticData.size} />
+							<DimensionElement StaticData={StaticData} />
+							<OpenAtNewTab StaticData={StaticData} />
+						</div>
 					</div>
-					<img className="static__data__item__img" src={StaticData.src} alt={StaticData.alt ?? undefined} />
+					<img
+						className="static__data__item__img"
+						src={StaticData.src}
+						alt={StaticData.alt ?? undefined}
+						style={currentZoom !== 0 ? { transform: `scale(${availableZooms[currentZoom]})` } : undefined}
+					/>
 				</div>
 				<div className="static__data__item__info">
 					<ThinLineElement />
@@ -85,11 +132,21 @@ function StaticDataItemElement({
 					<div className="static__data__item__names">
 						<div className="static__data__item__names__label__item" title={StaticData?.name ?? 'Name is empty'}>
 							<p className="static__data__item__names__prefix">Name:</p>
-							<p className="static__data__item__names__label">{StaticData.name === '' ? 'None' : StaticData.name}</p>
+							<input
+								type="text"
+								className="static__data__item__names__label__input"
+								defaultValue={StaticData.name ?? 'None'}
+								onKeyUp={(e) => OnKeyUp(e, 'name')}
+							/>
 						</div>
 						<div className="static__data__item__names__label__item" title={StaticData?.alt ?? 'Alt is empty'}>
 							<p className="static__data__item__names__prefix">Alt:</p>
-							<p className="static__data__item__names__label">{StaticData.alt === '' ? 'None' : StaticData.alt}</p>
+							<input
+								type="text"
+								className="static__data__item__names__label__input"
+								defaultValue={StaticData.alt ?? 'None'}
+								onKeyUp={(e) => OnKeyUp(e, 'alt')}
+							/>
 						</div>
 					</div>
 					<div className="static__data__item__buttons">
@@ -107,25 +164,29 @@ function StaticDataElement({
 	StaticDataArray,
 	selectedItems,
 	setSelectedItems,
+	StaticResponseData,
 }: {
 	StaticDataArray: StaticData[];
 	selectedItems: StaticData[];
 	setSelectedItems: React.Dispatch<React.SetStateAction<StaticData[]>>;
+	StaticResponseData: StaticData[];
 }): ReactElement {
 	return (
 		<div className="static__data__wrapper">
-			{StaticDataArray.length > 0 ? (
+			{StaticResponseData && StaticDataArray.length > 0 ? (
 				<div className="static__data__content">
-					{StaticDataArray.map((StaticData, i) =>
-						StaticData ? (
+					{StaticDataArray.map((StaticData) => {
+						const d = StaticResponseData.find((d) => d.id === StaticData.id);
+						if (!d) return null;
+						return (
 							<StaticDataItemElement
-								StaticData={StaticData}
-								key={`static__data__item__${i}`}
+								StaticData={d}
+								key={`static__data__item__${d.id}`}
 								selectedItems={selectedItems}
 								setSelectedItems={setSelectedItems}
 							/>
-						) : null,
-					)}
+						);
+					})}
 				</div>
 			) : (
 				<div className="static__data__empty">

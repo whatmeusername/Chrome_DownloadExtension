@@ -1,0 +1,16 @@
+.search__filter__wrapper {
+	.search__filter__input__wrapper {
+		display: flex;
+		flex-direction: row;
+		gap: 10px;
+		.search__filter__input {
+			width: 250px;
+			border-radius: 8px;
+			border: 2px solid var(--primary-color);
+			padding: 4px 5px;
+			font-family: sans-serif;
+			font-weight: 500;
+			color: var(--primary-color);
+		}
+	}
+}

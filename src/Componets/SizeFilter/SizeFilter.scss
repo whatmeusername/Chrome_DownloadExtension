@@ -12,6 +12,7 @@
 	}
 	.size__filter__wrapper {
 		.size__filter__header {
+			font-size: var(--fontX);
 			color: var(--primary-color);
 			margin: 0;
 			font-weight: 600;
@@ -37,6 +38,7 @@
 				border: 2px solid var(--grey-color);
 			}
 			.size__filter__label {
+				font-size: var(--fontL);
 				color: var(--primary-color);
 			}
 		}

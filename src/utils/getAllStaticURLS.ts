@@ -34,7 +34,7 @@ const GetFetchPromise = (res: Response): Promise<{ blob: Blob; extension: string
 		const extension = res.headers
 			.get('content-type')
 			?.split(/[\/\+]/)[1]
-			.trim();
+			?.trim();
 		resolve({
 			blob: blob,
 			extension: extension?.trim()?.toLowerCase() ?? null,
@@ -90,6 +90,7 @@ async function getAllStaticURLS(staticLinks: StaticLinksResult): Promise<GetAllS
 					const { width, height } = await getImageSizeMeta(image);
 
 					return {
+						id: i,
 						type: image.type,
 						src: image.src,
 						name: getImageName(image),

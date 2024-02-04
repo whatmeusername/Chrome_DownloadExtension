@@ -3,9 +3,9 @@ import { StaticData } from '../../../interface';
 import { useFilterContext } from '../../FilterContext/FilterContext';
 import { SelectAllButton } from '../SelectAllButton/SelectAllButton';
 
-import './HeadSelectionElement.scss';
 import { DownloadJsonDataButton } from './DownloadJsonDataButton/DownloadJsonDataButton';
 import { DownloadSelectedFilesButton } from './DownloadSelectedFilesButton/DownloadSelectedFilesButton';
+import './HeadSelectionElement.scss';
 
 function HeadSelectionElement({ StaticDataResult }: { StaticDataResult: StaticData[] }): ReactElement {
 	const { selectedItems, setSelectedItems } = useFilterContext();

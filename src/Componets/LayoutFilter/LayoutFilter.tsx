@@ -2,6 +2,7 @@ import { ReactElement } from 'react';
 import './LayoutFilter.scss';
 import Dropdown from '../Dropdown/Dropdown';
 import { CheckmarkIcon, LayoutIcon } from '../icons';
+import { StaticImageLayout } from '../../interface';
 
 function LayoutFilter({
 	selectedLayout,
@@ -44,6 +45,7 @@ function LayoutFilter({
 						<p className="static__data__header__filter__item__label">All</p>
 					</button>
 					{extensionCountPairs.map(([extension, count]) => {
+						if (extension === StaticImageLayout.ALL) return null;
 						return (
 							<button
 								className={`static__data__header__filter__item static__data__header__filter__item__layout ${
