@@ -71,6 +71,13 @@ interface FilterContextType {
 	setSelectedItems: React.Dispatch<React.SetStateAction<StaticData[]>>;
 }
 
+interface ExtensionStateContextType {
+	isHeadOpened: boolean;
+	setHeadOpened: React.Dispatch<React.SetStateAction<boolean>>;
+	setDataLayout: React.Dispatch<React.SetStateAction<'column' | 'grid'>>;
+	dataLayout: 'column' | 'grid';
+}
+
 interface GetAllStaticResponse {
 	data: StaticData[];
 	extensions: { [K: string]: number };
@@ -78,5 +85,15 @@ interface GetAllStaticResponse {
 	size: { height: { min: number; max: number }; width: { min: number; max: number } };
 }
 
-export type { StaticData, StaticLinksResult, StaticLinkData, SearchData, StaticDataSizeFilter, FilterContextType, GetAllStaticResponse, SortOption };
+export type {
+	StaticData,
+	StaticLinksResult,
+	StaticLinkData,
+	SearchData,
+	StaticDataSizeFilter,
+	FilterContextType,
+	ExtensionStateContextType,
+	GetAllStaticResponse,
+	SortOption,
+};
 export { StaticExtensionTypeEnum, StaticImageLayout };

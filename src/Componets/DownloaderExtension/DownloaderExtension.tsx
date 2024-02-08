@@ -6,10 +6,12 @@ import { StaticDataElement } from '../StaticDataElement/StaticDataElement';
 import { LoadingElement } from '../LoadingElement/LoadingElement';
 import { FilterContextElement } from '../FilterContext/FilterContext';
 import { ExtensionHead } from '../ExtensionHead/ExtensionHead';
+import { ExtensionStateContextElement } from '../ExtensionStateContext/ExtensionStateContext';
 
 function DownloaderExtension({ staticLinks }: { staticLinks: StaticLinksResult }): ReactElement {
 	const StaticResponseData = useRef<GetAllStaticResponse>(null!);
-
+	const [isHeadOpened, setHeadOpened] = useState<boolean>(true);
+	const [dataLayout, setDataLayout] = useState<'column' | 'grid'>('grid');
 	//SELECTED
 	const [selectedItems, setSelectedItems] = useState<StaticData[]>([]);
 
@@ -66,36 +68,54 @@ function DownloaderExtension({ staticLinks }: { staticLinks: StaticLinksResult }
 	}, [staticLinks]);
 
 	return (
-		<FilterContextElement
+		<ExtensionStateContextElement
 			value={{
-				searchData: searchData,
-				setSearchData: setSearchData,
-				sortOption: sortOption,
-				setSortOption: setSortOption,
-				selectedExtension: selectedExtension,
-				setSelectedExtension: setSelectedExtension,
-				selectedLayout: selectedLayout,
-				setSelectedLayout: setSelectedLayout,
-				selectedSize: selectedSize,
-				setSelectedSize: setSelectedSize,
-				selectedItems: selectedItems,
-				setSelectedItems: setSelectedItems,
+				isHeadOpened: isHeadOpened,
+				setHeadOpened: setHeadOpened,
+				setDataLayout: setDataLayout,
+				dataLayout: dataLayout,
 			}}
 		>
-			<div className="extension__main__wrapper">
-				<ExtensionHead StaticResponseData={StaticResponseData} StaticDataResult={StaticDataResult} />
-				{StaticResponseData.current && StaticDataResult ? (
-					<StaticDataElement
-						StaticDataArray={StaticDataResult}
-						StaticResponseData={StaticResponseData.current.data}
-						selectedItems={selectedItems}
-						setSelectedItems={setSelectedItems}
+			<FilterContextElement
+				value={{
+					searchData: searchData,
+					setSearchData: setSearchData,
+					sortOption: sortOption,
+					setSortOption: setSortOption,
+					selectedExtension: selectedExtension,
+					setSelectedExtension: setSelectedExtension,
+					selectedLayout: selectedLayout,
+					setSelectedLayout: setSelectedLayout,
+					selectedSize: selectedSize,
+					setSelectedSize: setSelectedSize,
+					selectedItems: selectedItems,
+					setSelectedItems: setSelectedItems,
+				}}
+			>
+				<div className="extension__main__wrapper">
+					<ExtensionHead
+						StaticResponseData={StaticResponseData}
+						StaticDataResult={StaticDataResult}
+						isHeadOpened={isHeadOpened}
+						setHeadOpened={setHeadOpened}
+						setDataLayout={setDataLayout}
+						dataLayout={dataLayout}
 					/>
-				) : (
-					<LoadingElement count={staticLinks?.count} />
-				)}
-			</div>
-		</FilterContextElement>
+					{StaticResponseData.current && StaticDataResult ? (
+						<StaticDataElement
+							StaticDataArray={StaticDataResult}
+							StaticResponseData={StaticResponseData.current.data}
+							selectedItems={selectedItems}
+							setSelectedItems={setSelectedItems}
+							isHeadOpened={isHeadOpened}
+							dataLayout={dataLayout}
+						/>
+					) : (
+						<LoadingElement count={staticLinks?.count} />
+					)}
+				</div>
+			</FilterContextElement>
+		</ExtensionStateContextElement>
 	);
 }
 

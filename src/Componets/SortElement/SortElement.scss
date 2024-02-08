@@ -1,4 +1,4 @@
-.static__data__header__filter__allowed__sort {
+.static__data__header__filter__content {
 	display: flex;
 	flex-direction: column;
 	.static__data__header__filter__item {
@@ -44,6 +44,14 @@
 				.static__data__header__filter__item__icon {
 					max-width: 100%;
 					max-height: 100%;
+					&.static__data__header__filter__item__icon__wrapper__large {
+						width: 22px;
+						height: 22px;
+						.static__data__header__filter__item__icon {
+							max-width: 100%;
+							max-height: 100%;
+						}
+					}
 				}
 			}
 			.static__data__header__filter__item__icon {

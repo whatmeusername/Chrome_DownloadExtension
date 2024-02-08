@@ -3,12 +3,6 @@
     "name": "Image Dowloander and Converter",
     "description": "Base Level Extension",
     "version": "1.0",
-    "content_scripts": [{
-        "matches": [
-            "<all_urls>"
-        ],
-        "js": ["./content.ts"]
-    }],
     "permissions": [
         "scripting",
         "downloads",

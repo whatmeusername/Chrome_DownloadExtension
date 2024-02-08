@@ -16,12 +16,18 @@ const SortData: SortOption[] = [
 function SortElement({
 	sortOption,
 	setSortOption,
+	disabled,
 }: {
 	sortOption: SortOption | null;
 	setSortOption: React.Dispatch<React.SetStateAction<SortOption | null>>;
+	disabled: boolean;
 }): ReactElement {
 	return (
-		<Dropdown header={sortOption !== null ? sortOption.alias : 'Sort'} icon={<SortIcon className="modal__toggle__button__icon" />}>
+		<Dropdown
+			header={sortOption !== null ? sortOption.alias : 'Sort'}
+			disabled={disabled}
+			icon={<SortIcon className="modal__toggle__button__icon" />}
+		>
 			<div className="static__data__header__filter__content static__data__header__filter__allowed__sort">
 				<button
 					className={`static__data__header__filter__item static__data__header__filter__item__sort ${

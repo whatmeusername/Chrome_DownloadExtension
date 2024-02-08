@@ -9,6 +9,9 @@ import './ExtensionHead.scss';
 import { HeadSelectionElement } from './HeadSelectionElement/HeadSelectionElement';
 import { SortElement } from '../SortElement/SortElement';
 import { SearchElement } from '../SearchElement/SearchElement';
+import { ThinLineElement } from '../shared/ThinLineElement';
+import { ToggleHeadButton } from './OpenHeadButton/OpenHeadButton';
+import { useExtensionStateContext } from '../ExtensionStateContext/ExtensionStateContext';
 
 function ExtensionHead({
 	StaticResponseData,
@@ -19,11 +22,16 @@ function ExtensionHead({
 }): ReactElement {
 	const { sortOption, setSortOption, selectedExtension, setSelectedExtension, selectedLayout, setSelectedLayout, selectedSize, setSelectedSize } =
 		useFilterContext();
-
+	const { isHeadOpened } = useExtensionStateContext();
 	return (
-		<div className="extension__main__head__wrapper">
+		<div
+			className={`extension__main__head__wrapper ${
+				!isHeadOpened ? 'extension__main__head__wrapper__closed' : 'extension__main__head__wrapper__opened'
+			}`}
+		>
+			{!isHeadOpened ? <ToggleHeadButton isClose={false} /> : null}
 			<div className="extension__main__head">
-				<SearchElement />
+				<SearchElement StaticResponseData={StaticResponseData.current} />
 				<div className="extension__main__head__filters">
 					<ExtensionFilter
 						selectedExtension={selectedExtension}
@@ -32,8 +40,13 @@ function ExtensionHead({
 					/>
 					<LayoutFilter selectedLayout={selectedLayout} setSelectedLayout={setSelectedLayout} layoutData={StaticResponseData.current?.layout} />
 					<SizeFilter selectedSize={selectedSize} setSelectedSize={setSelectedSize} sizeData={StaticResponseData.current?.size} />
-					<SortElement sortOption={sortOption} setSortOption={setSortOption} />
+					<SortElement
+						sortOption={sortOption}
+						setSortOption={setSortOption}
+						disabled={StaticResponseData.current === null || StaticResponseData.current?.data?.length === 0}
+					/>
 				</div>
+				<ThinLineElement />
 				<HeadSelectionElement StaticDataResult={StaticDataResult} />
 			</div>
 		</div>

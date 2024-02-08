@@ -1,44 +1,7 @@
 .static__data__header__filter__allowed__layout {
-	display: flex;
-	flex-direction: column;
 	.static__data__header__filter__item {
-		border: none;
-		background: none;
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		gap: 5px;
-		padding: 0 15px;
-		margin: 0;
-		&:not(.static__data__header__filter__item__active) {
-			&:hover {
-				background-color: var(--hover-bg-color);
-			}
-		}
-		&.static__data__header__filter__item__active {
-			background-color: var(--hover-bg-color);
-		}
 		.static__data__header__filter__item__label {
-			color: var(--primary-color);
-			font-size: var(--fontM);
-			letter-spacing: -0.5px;
-			font-weight: 600;
 			text-transform: uppercase;
-		}
-		.static__data__header__filter__item__count {
-			color: var(--secondary-color);
-			font-size: var(--fontM);
-			letter-spacing: -0.5px;
-			font-weight: 400;
-		}
-		.static__data__header__filter__item__icon__wrapper {
-			width: 16px;
-			height: 16px;
-			.static__data__header__filter__item__icon {
-				max-width: 15px;
-				max-height: 15px;
-				fill: var(--primary-color);
-			}
 		}
 	}
 }

@@ -17,6 +17,12 @@ import ExtensionIcon from '../../icons/extension.svg?react';
 import LayoutIcon from '../../icons/layout.svg?react';
 import SortIcon from '../../icons/sort.svg?react';
 
+import MinimizeIcon from '../../icons/minimize.svg?react';
+import MaximizeIcon from '../../icons/maximize.svg?react';
+
+import GridIcon from '../../icons/grid.svg?react';
+import ColumnIcon from '../../icons/column.svg?react';
+
 export {
 	CheckmarkIcon,
 	ConvertIcon,
@@ -34,4 +40,8 @@ export {
 	ExtensionIcon,
 	LayoutIcon,
 	SortIcon,
+	MinimizeIcon,
+	MaximizeIcon,
+	GridIcon,
+	ColumnIcon,
 };

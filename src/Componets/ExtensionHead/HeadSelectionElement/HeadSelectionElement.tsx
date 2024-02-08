@@ -17,7 +17,7 @@ function HeadSelectionElement({ StaticDataResult }: { StaticDataResult: StaticDa
 				<DownloadSelectedFilesButton selectedItems={selectedItems} />
 
 				<p className="extension__main__head__selection__label">
-					Selected {selectedItems.length} of {StaticDataResult?.length ?? 0} files
+					Selected {selectedItems.length} of {StaticDataResult?.length ?? 0} images
 				</p>
 			</div>
 			<div className="extension__main__head__selection__right">

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { StaticLinksResult } from '../interface';
 import { CollectAllStaticLinks, FilterStaticLinks } from './CollectAllStaticLinks';
 
@@ -10,11 +8,11 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 				.executeScript({
 					target: { tabId: tab.id },
 					func: () => {
-						const CollectAllStaticLinks = async (
+						async function CollectAllStaticLinks(
 							result: StaticLinksResult | undefined,
 							document: Document | null | undefined | string,
 							fetchLike?: 'iframe' | 'css',
-						): Promise<StaticLinksResult> => {
+						): Promise<StaticLinksResult> {
 							const windowDomain = window.location.host;
 							const protocol = window?.location?.protocol ?? '';
 							const imagesFilesSrc: string[] = [];
@@ -86,40 +84,48 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 							function ProcessCssStyles(source: HTMLElement | CSSRule | string, result: StaticLinksResult, prefix?: string): StaticLinksResult {
 								let cssRuleImages: string[] = [];
 
-								if ((source as HTMLElement).tagName) {
-									const style = (source as HTMLElement).style;
-									const backgroundImageMatch: string[] = style.background.match(cssURLRegex) ?? [];
-									const backgroundMatch: string[] = style.backgroundImage.match(cssURLRegex) ?? [];
-									cssRuleImages = cssRuleImages.concat(backgroundImageMatch, backgroundMatch);
-								} else if ((source as CSSStyleRule)?.cssText) {
-									const style = (source as CSSStyleRule).style;
+								try {
+									if ((source as HTMLElement).tagName) {
+										const style = (source as HTMLElement).style;
+										const backgroundImageMatch: string[] = style.background.match(cssURLRegex) ?? [];
+										const backgroundMatch: string[] = style.backgroundImage.match(cssURLRegex) ?? [];
+										cssRuleImages = cssRuleImages.concat(backgroundImageMatch, backgroundMatch);
+									} else if ((source as CSSStyleRule)?.cssText) {
+										const style = (source as CSSStyleRule).style;
 
-									const backgroundImageMatch = style?.backgroundImage?.match(cssURLRegex) ?? [];
-									const backgroundMatch = style?.background?.match(cssURLRegex) ?? [];
-									cssRuleImages = cssRuleImages.concat(backgroundImageMatch, backgroundMatch);
-								} else if (typeof source === 'string') {
-									cssRuleImages = source.match(cssURLRegex) ?? [];
-								}
-
-								for (let i = 0; i < cssRuleImages.length; i++) {
-									let currentURL = TrimUrl(cssRuleImages[i]);
-
-									if (imagesFilesSrc.includes(currentURL) || !ValidateExtension(currentURL)) continue;
-
-									const isUrlData = isDataUrl(currentURL);
-									const url = isUrlData ? currentURL : CheckPath(currentURL, prefix);
-
-									imagesFilesSrc.push(currentURL);
-
-									if (isUrlData || isHttpUrl(url)) {
-										result.data.push({
-											type: isUrlData ? 'data' : 'src',
-											src: url,
-											alt: '',
-											width: null,
-											height: null,
-										});
+										const backgroundImageMatch = style?.backgroundImage?.match(cssURLRegex) ?? [];
+										const backgroundMatch = style?.background?.match(cssURLRegex) ?? [];
+										cssRuleImages = cssRuleImages.concat(backgroundImageMatch, backgroundMatch);
+									} else if (typeof source === 'string') {
+										cssRuleImages = source.match(cssURLRegex) ?? [];
 									}
+
+									for (let i = 0; i < cssRuleImages.length; i++) {
+										try {
+											let currentURL = TrimUrl(cssRuleImages[i]);
+
+											if (imagesFilesSrc.includes(currentURL) || !ValidateExtension(currentURL)) continue;
+
+											const isUrlData = isDataUrl(currentURL);
+											const url = isUrlData ? currentURL : CheckPath(currentURL, prefix);
+
+											imagesFilesSrc.push(currentURL);
+
+											if (isUrlData || isHttpUrl(url)) {
+												result.data.push({
+													type: isUrlData ? 'data' : 'src',
+													src: url,
+													alt: '',
+													width: null,
+													height: null,
+												});
+											}
+										} catch {
+											continue;
+										}
+									}
+								} catch {
+									return result;
 								}
 
 								return result;
@@ -153,22 +159,26 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 									const elements = el.querySelectorAll('[src]');
 
 									for (let i = 0; i < elements.length; i++) {
-										const el = elements[i] as HTMLImageElement;
+										try {
+											const el = elements[i] as HTMLImageElement;
 
-										if (IsNotValidImageData(el as any)) continue;
-										if (!ValidateExtension(el.src)) continue;
+											if (IsNotValidImageData(el as any)) continue;
+											if (!ValidateExtension(el.src)) continue;
 
-										imagesFilesSrc.push(el.src);
+											imagesFilesSrc.push(el.src);
 
-										const isUrlData = isDataUrl(el.src);
-										if (isUrlData || isHttpUrl(el.src)) {
-											result.data.push({
-												type: isUrlData ? 'data' : 'src',
-												src: isUrlData ? el.src : CheckPath(el.src),
-												alt: isUrlData ? '' : el.alt,
-												width: el.naturalWidth ?? el.width ?? null,
-												height: el.naturalHeight ?? el.height ?? null,
-											});
+											const isUrlData = isDataUrl(el.src);
+											if (isUrlData || isHttpUrl(el.src)) {
+												result.data.push({
+													type: isUrlData ? 'data' : 'src',
+													src: isUrlData ? el.src : CheckPath(el.src),
+													alt: isUrlData ? '' : el.alt,
+													width: el.naturalWidth ?? el.width ?? null,
+													height: el.naturalHeight ?? el.height ?? null,
+												});
+											}
+										} catch {
+											continue;
 										}
 									}
 								};
@@ -176,25 +186,30 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 								const CollectFromSVGS = () => {
 									const svgs = el.querySelectorAll('svg');
 									for (let i = 0; i < svgs.length; i++) {
-										const serializedSVG = new XMLSerializer().serializeToString(svgs[i]);
-										const dataURL = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(serializedSVG)));
+										try {
+											const serializedSVG = new XMLSerializer().serializeToString(svgs[i]);
+											const dataURL = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(serializedSVG)));
 
-										if (imagesFilesSrc.includes(dataURL)) continue;
-										imagesFilesSrc.push(dataURL);
+											if (imagesFilesSrc.includes(dataURL)) continue;
+											imagesFilesSrc.push(dataURL);
 
-										const rect = svgs[i].getBoundingClientRect();
-										result.data.push({
-											type: 'data',
-											src: CheckPath(dataURL),
-											alt: '',
-											width: rect.width,
-											height: rect.height,
-										});
+											const rect = svgs[i].getBoundingClientRect();
+											result.data.push({
+												type: 'data',
+												src: CheckPath(dataURL),
+												alt: '',
+												width: rect.width,
+												height: rect.height,
+											});
+										} catch {
+											continue;
+										}
 									}
 								};
 
 								const CollectFromInlineStyle = () => {
 									const elementsWithStyle = el.querySelectorAll('[style]');
+									if (elementsWithStyle.length === 0) return;
 									for (let i = 0; i < elementsWithStyle.length; i++) {
 										ProcessCssStyles(elementsWithStyle[i] as HTMLElement, result);
 									}
@@ -220,12 +235,16 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 								const ProcessIFrames = async () => {
 									const iframes = el.querySelectorAll('iframe');
 									for (let i = 0; i < iframes.length; i++) {
-										const isSameDomain = !iframes[i].src ? true : new URL(iframes[i].src).host === windowDomain;
-										if (isSameDomain) {
-											const doc = iframes[i]?.contentDocument ?? iframes[i]?.contentWindow?.document;
-											if (doc) await ProcessElement(doc, result, true);
-										} else {
-											result.iFramesOrigins.push(iframes[i].src);
+										try {
+											const isSameDomain = !iframes[i].src ? true : new URL(iframes[i].src).host === windowDomain;
+											if (isSameDomain) {
+												const doc = iframes[i]?.contentDocument ?? iframes[i]?.contentWindow?.document;
+												if (doc) await ProcessElement(doc, result, true);
+											} else {
+												result.iFramesOrigins.push(iframes[i].src);
+											}
+										} catch {
+											continue;
 										}
 									}
 								};
@@ -249,7 +268,7 @@ function ChromeCollectData(setStaticLinks: React.Dispatch<React.SetStateAction<S
 							result.count = result.data.length;
 
 							return result;
-						};
+						}
 
 						return CollectAllStaticLinks(undefined, document);
 					},
